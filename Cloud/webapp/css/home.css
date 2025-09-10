@@ -1,0 +1,190 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: Arial, sans-serif;
+}
+.container {
+    display: flex;
+    height: 100vh;
+}
+.sidebar {
+    width: 200px;
+    background-color: #f0f0f0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info {
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.user-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-link {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    text-decoration: none;
+    padding: 5px;
+    border-radius: 8px;
+    background-color: #e0e0e0;
+    text-align: center;
+}
+.sidebar-link:hover {
+    background-color: #d0d0d0;
+}
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.top-bar {
+    display: flex;
+    background-color: #e0e0e0;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    align-items: center;
+    min-height: 50px;
+    gap: 10px;
+}
+
+.path-container {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background-color: #d0d0d0;
+    min-width: 0;
+    white-space: nowrap;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+}
+.action-btn:hover {
+    background-color: #45a049;
+}
+
+/* 文件列表样式 */
+.file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    gap: 10px;
+}
+/* 文件名容器（支持水平滚动） */
+.file-name-container {
+    flex: 1;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    min-width: 0;
+    padding: 0 5px;
+}
+.file-name {
+    padding: 5px;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    text-decoration: none;
+    color: #333;
+    white-space: nowrap;
+}
+.file-name:hover {
+    background-color: #e0e0e0;
+}
+.file-time, .file-size {
+    padding: 5px;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* 关键：新增下载按钮样式（绿色，与上传按钮一致） */
+.download-btn {
+    padding: 5px 10px;
+    border-radius: 8px;
+    background-color: #4CAF50; /* 绿色，同上传按钮 */
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.download-btn:hover {
+    background-color: #45a049; /*  hover深色，同上传按钮 */
+}
+
+/* 删除按钮样式（保留红色） */
+.delete-btn {
+    padding: 5px 10px;
+    border-radius: 8px;
+    background-color: #f44336; /* 红色，保持原有样式 */
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+.user-name {
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+/* 滚动条样式 */
+.path-container::-webkit-scrollbar,
+.file-name-container::-webkit-scrollbar { /* 文件名容器和路径容器共用滚动条样式 */
+    height: 6px;
+}
+.path-container::-webkit-scrollbar-track,
+.file-name-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+.path-container::-webkit-scrollbar-thumb,
+.file-name-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+.path-container::-webkit-scrollbar-thumb:hover,
+.file-name-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
