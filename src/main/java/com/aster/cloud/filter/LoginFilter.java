@@ -1,6 +1,8 @@
 package com.aster.cloud.filter;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.SessionManager;
+import com.aster.cloud.utils.DBManager;
+import com.aster.cloud.utils.LogManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
@@ -11,7 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +49,7 @@ public class LoginFilter extends HttpFilter {
         return false;
     }
     private boolean session_accessible(HttpSession session){
-        String loggedInUser = (String) session.getAttribute("username");
+        String loggedInUser = (String) session.getAttribute("user_name");
         return loggedInUser != null;
     }
     private void verify_login_token(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -70,12 +71,10 @@ public class LoginFilter extends HttpFilter {
         }
         Connection conn = null;
         try{
-            String sql = "SELECT name, create_date FROM login_tokens WHERE login_token = ?";
-            HttpSession session = request.getSession();
-
             PreparedStatement preparedStatement = null;
             ResultSet rs = null;
-            conn = DBUtils.getConnection();
+            String sql = "SELECT name, create_date FROM login_tokens WHERE login_token = ?";
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, loginToken);
             rs = preparedStatement.executeQuery();
@@ -86,10 +85,12 @@ public class LoginFilter extends HttpFilter {
                 long createTimeTimeStamp = createTime.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
                 long localTimeTimeStamp = LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
                 if(localTimeTimeStamp-createTimeTimeStamp<1000*3600*24*10){
+                    //loginToken认证成功，session绑定信息
                     String userName = rs.getString("name");
-                    session.setAttribute("username", userName);
+                    SessionManager.bindUserName(request, userName);
+                    SessionManager.bindDirectory(request);
                     String nowTime = LocalDateTime.now().format(formatter);
-                    loginLogInsert(userName, nowTime, request.getRemoteHost());
+                    LogManager.loginLogInsert(userName, nowTime, request.getRemoteHost());
                     System.out.println("token认证成功，设置session后，放行");
                     chain.doFilter(request, response);
                 }else {
@@ -108,37 +109,13 @@ public class LoginFilter extends HttpFilter {
 
         } catch (SQLException e) {
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
-            System.out.println("LoginFilter中出现sql异常");
+            System.err.println("LoginFilter中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
 
     }
-    private void loginLogInsert(String name, String loginTime, String ip){
-        Connection conn = null;
-        try{
-            PreparedStatement preparedStatement = null;
-            String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
-            conn = DBUtils.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, loginTime);
-            preparedStatement.setString(3, ip);
-            int count = preparedStatement.executeUpdate();
-            if(count == 1){
-                System.out.println("LoginFilter中记录登陆成功");
-            } else{
-                System.out.println("LoginFilter中记录登陆失败");
-            }
 
-        } catch (SQLException e){
-            System.out.println("LoginFilter中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBUtils.closeConnection(conn);
-        }
-    }
 }

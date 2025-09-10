@@ -1,6 +1,6 @@
 package com.aster.cloud.listener;
 
-import com.aster.cloud.utils.CleanupTask;
+import com.aster.cloud.utils.CleanupTasker;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -11,12 +11,12 @@ public class ApplicationConfigListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        CleanupTask.startCleanupTask();
+        CleanupTasker.startCleanupTask();
         System.out.println("ApplicationConfigListener执行成功");
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        CleanupTask.stopCleanupTask();
+        CleanupTasker.stopCleanupTask();
     }
 }

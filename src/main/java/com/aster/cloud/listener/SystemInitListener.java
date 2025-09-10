@@ -1,13 +1,12 @@
 package com.aster.cloud.listener;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.FileManager;
 import com.aster.cloud.utils.UUIDGenerator;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import jakarta.servlet.annotation.WebServlet;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,7 +26,7 @@ public class SystemInitListener implements ServletContextListener {
         String admin_password = (String) servletContext.getAttribute("admin_password");
         // 检查配置是否为空
         if (admin_name == null || admin_password == null) {
-            System.out.println("管理员用户名或密码未配置");
+            System.err.println("管理员用户名或密码未配置");
             throw new RuntimeException();
         }
         Connection conn = null;
@@ -35,9 +34,9 @@ public class SystemInitListener implements ServletContextListener {
             PreparedStatement preparedStatement = null;
             ResultSet rs = null;
             System.out.println("正在获取数据库连接...");
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             if (conn == null || conn.isClosed()) {
-                System.out.println("数据库连接失败");
+                System.err.println("数据库连接失败");
                 throw new SQLException();
             }
             System.out.println("数据库连接成功");
@@ -62,7 +61,7 @@ public class SystemInitListener implements ServletContextListener {
             if (rs.next()) {
                 // 更新密码
                 if(admin_password.length() > 128){
-                    System.out.println("管理员密码超出128位");
+                    System.err.println("管理员密码超出128位");
                     throw new RuntimeException();
                 }
                 sql = "UPDATE user SET password = ? WHERE name = ?";
@@ -81,7 +80,7 @@ public class SystemInitListener implements ServletContextListener {
             } else {
                 // 插入 admin 用户
                 if(admin_name.length()>64 || admin_password.length()>128){
-                    System.out.println("管理员名字或者密码超长，名字限长64位，密码限长128位");
+                    System.err.println("管理员名字或者密码超长，名字限长64位，密码限长128位");
                     throw new RuntimeException();
                 }
                 sql = "INSERT INTO user (name, password, limit_volume, dir_name, create_date) VALUES (?, ?, ?, ?, ?)";
@@ -130,11 +129,11 @@ public class SystemInitListener implements ServletContextListener {
 
 
         } catch (SQLException e) {
-            System.out.println("SystemInitListener中出现sql异常");
+            System.err.println("SystemInitListener中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
         System.out.println("SystemInitListener执行成功");
     }

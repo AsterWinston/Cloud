@@ -1,6 +1,6 @@
 package com.aster.cloud.servlet;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -28,22 +28,22 @@ public class LogoutServlet extends HttpServlet {
         try {
             PreparedStatement preparedStatement = null;
             String sql = "delete from login_tokens where name = ?";
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, username);
             int count = preparedStatement.executeUpdate();
             if(count == 1){
                 System.out.println("LogoutServlet中删除login_token成功");
             } else {
-                System.out.println("LogoutServlet中删除login_token失败");
+                System.err.println("LogoutServlet中删除login_token失败");
             }
 
         } catch (SQLException e){
-            System.out.println("Logout中出现sql异常");
+            System.err.println("Logout中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
     }
     private void deleteCookieLoginToken(HttpServletResponse response){

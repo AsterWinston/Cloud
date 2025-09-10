@@ -1,4 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page import="com.aster.cloud.beans.FileOrDirInformation" %>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -6,6 +9,22 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
 </head>
 <body>
+    <form id="getInDirForm" method="post" action="${pageContext.request.contextPath}/home">
+        <input type="hidden" name="current_dir" id="destinationDirInput"/>
+    </form>
+    <form id="backDirForm" method="post" action="${pageContext.request.contextPath}/home">
+        <input type="hidden" name="current_dir" id="parentDir"
+        value="${parent_path != current_dir ? parent_path : ''}" />
+    </form>
+    <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/deleteFile">
+        <input type="hidden" name="file_or_dir_to_delete" id="deleteFileInput"
+        value="${current_dir}"/>
+    </form>
+    <form id="downloadForm" method="post" action="${pageContext.request.contextPath}/downloadFile">
+        <input type="hidden" name="file_path_to_download" id="downloadFileInput"
+        value="${current_dir}"/>
+    </form>
+
     <div class="container">
         <!-- 左侧边栏（无修改） -->
         <div class="sidebar">
@@ -15,7 +34,7 @@
                     <span class="user-name">${username}</span>
                 </div>
             </div>
-            <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">修改密码</a>
+            <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
             <a href="#" class="sidebar-link">前往后台</a>
             <a href="${pageContext.request.contextPath}/logout" class="sidebar-link">安全退出</a>
         </div>
@@ -24,8 +43,9 @@
             <!-- 顶部操作栏（无修改） -->
             <div class="top-bar">
                 <div class="path-container">
-                    <span class="current-path">当前路径为：/home/user/documents/projects/web-development/file-management-system/assets/images/icons/svg</span>
+                    <span class="current-path">当前路径为：${relative_path}</span>
                 </div>
+
                 <a href="javascript:void(0);" class="action-btn" id="backParentBtn">返回上级</a>
                 <div class="action-buttons">
                     <a href="javascript:void(0);" class="action-btn" id="uploadBtn">上传文件</a>
@@ -35,27 +55,42 @@
 
             <!-- 文件列表区域（关键修改：下载按钮用download-btn类，删除按钮保留delete-btn类） -->
             <div class="file-list">
-                <div class="file-item">
-                    <div class="file-name-container">
-                        <a href="#" class="file-name">这是一个非常长的文件名示例，用于测试水平滚动效果.txt</a>
+                <c:forEach var="file" items="${dir_info.dir_list}">
+                    <div class="file-item">
+                        <div class="file-name-container">
+                            <c:choose>
+                                <c:when test="${file.typeStr == 'DIRECTORY'}">
+                                    <a href="javascript:void(0);"
+                                       class="file-name"
+                                       onclick="openDir('${dir_info.current_dir}/${file.name}')">${file.name}</a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="javascript:void(0);"
+                                       class="file-name"
+                                       onclick="openDir('')">${file.name}</a>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <span class="file-time">${file.time}</span>
+                        <span class="file-size">${file.size}MB</span>
+                        <a href="javascript:void(0);" class="download-btn" onclick="downloadFile(this)">下载</a>
+                        <a href="javascript:void(0);" class="delete-btn" onclick="deleteFile(this)">删除</a>
                     </div>
-                    <span class="file-time">2023-10-01 12:30</span>
-                    <span class="file-size">2.5MB</span>
-                    <a href="javascript:void(0);" class="download-btn" onclick="downloadFile(this)">下载</a>
-                    <a href="javascript:void(0);" class="delete-btn" onclick="deleteFile(this)">删除</a>
-                </div>
-                <div class="file-item">
-                    <div class="file-name-container">
-                        <a href="#" class="file-name">文件（夹）2</a>
-                    </div>
-                    <span class="file-time">2023-10-02 15:45</span>
-                    <span class="file-size">1.8MB</span>
-                    <a href="javascript:void(0);" class="download-btn" onclick="downloadFile(this)">下载</a>
-                    <a href="javascript:void(0);" class="delete-btn" onclick="deleteFile(this)">删除</a>
-                </div>
+                </c:forEach>
+
             </div>
         </div>
     </div>
     <script src="${pageContext.request.contextPath}/js/home.js"></script>
+    <script>
+        var deleteSuccess = "${delete_success}";
+        if (deleteSuccess) {
+            alert("${delete_success}");
+        }
+        var deleteError = "${delete_error}";
+        if (deleteError) {
+            alert("delete_error");
+        }
+    </script>
 </body>
 </html>

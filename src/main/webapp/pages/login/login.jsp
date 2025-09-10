@@ -43,9 +43,9 @@
         </div>
     </div>
     <script>
-        var loginError = "${loginError}";
+        var loginError = "${login_error}";
         if (loginError) {
-            alert(loginError);  // 弹出错误提示
+            alert("${login_error}");  // 弹出错误提示
         }
         var password = "${param.password}";
         if (password) {

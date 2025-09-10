@@ -8,23 +8,21 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class DBUtils {
+public class DBManager {
 
     // 声明数据源
     private static HikariDataSource dataSource;
 
     // 私有化构造函数，防止外部实例化
-    private DBUtils() {}
+    private DBManager() {}
 
     // 静态代码块：在类加载时进行配置
     static {
         InputStream inputStream = null;
         try {
             // 读取 db.properties 配置文件
-            inputStream = DBUtils.class.getClassLoader().getResourceAsStream("conf/db.properties");
+            inputStream = DBManager.class.getClassLoader().getResourceAsStream("conf/db.properties");
             if (inputStream == null) {
                 System.out.println("DBUtiles中配置文件'db.properties'未找到");
                 throw new IOException();
@@ -52,7 +50,7 @@ public class DBUtils {
             System.out.println("数据库连接池初始化成功");
 
         } catch (IOException e) {
-            System.out.println("DBUtils中加载配置文件失败");
+            System.err.println("DBUtils中加载配置文件失败");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
@@ -61,7 +59,7 @@ public class DBUtils {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    System.out.println("DBUtils中关闭配置文件输入流失败");
+                    System.err.println("DBUtils中关闭配置文件输入流失败");
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }
@@ -72,7 +70,7 @@ public class DBUtils {
     // 获取数据库连接
     public static Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            System.out.println("数据库连接池未初始化");
+            System.err.println("数据库连接池未初始化");
             throw new SQLException();
         }
         return dataSource.getConnection();
@@ -84,7 +82,7 @@ public class DBUtils {
             try {
                 conn.close();  // 归还连接池
             } catch (SQLException e) {
-                System.out.println("关闭数据库连接失败");
+                System.err.println("关闭数据库连接失败");
                 e.printStackTrace();
                 throw new RuntimeException(e);
             }

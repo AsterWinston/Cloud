@@ -1,7 +1,9 @@
 package com.aster.cloud.servlet;
 
+import com.aster.cloud.utils.LogManager;
 import com.aster.cloud.utils.RandomTokenGenerator;
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
+import com.aster.cloud.utils.SessionManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -31,19 +33,19 @@ public class LoginServlet extends HttpServlet {
                 PreparedStatement preparedStatement = null;
                 ResultSet rs = null;
                 String sql = "SELECT name, password FROM user WHERE name = ? AND password = ?";
-                conn = DBUtils.getConnection();
+                conn = DBManager.getConnection();
                 preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, name);
                 preparedStatement.setString(2, password);
                 rs = preparedStatement.executeQuery();
                 if (rs.next()) {
-                    // 登录成功，设置 session
-                    HttpSession session = request.getSession();
-                    session.setAttribute("username", name);  // 保存用户名到 session
+                    // 登录成功，session绑定用户的名字
+                    SessionManager.bindUserName(request, name);// 保存用户名到 session
+                    SessionManager.bindDirectory(request);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     String nowTime = LocalDateTime.now().format(formatter);
 
-                    loginLogInsert(name, nowTime, request.getRemoteHost());
+                    LogManager.loginLogInsert(name, nowTime, request.getRemoteHost());
                     //判断是否要存token
                     Object obj = request.getParameter("rememberMe");
                     if(obj != null) {
@@ -55,21 +57,21 @@ public class LoginServlet extends HttpServlet {
                 } else{
                     //绑定原来输入的数据，保持登陆
                     System.out.println("账号或密码验证失败，登陆失败，转发到pages/login/login.jsp");
-                    request.setAttribute("loginError", "账号或者密码错误，请重试");
+                    request.setAttribute("login_error", "账号或者密码错误，请重试");
                     // 转发到登录页面
                     request.getRequestDispatcher("pages/login/login.jsp").forward(request, response);
                 }
             } catch (SQLException e) {
                 request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
-                System.out.println("LoginServlet出现sql异常");
+                System.err.println("LoginServlet出现sql异常");
                 e.printStackTrace();
                 throw new RuntimeException(e);
             } finally {
                 // 关闭数据库连接等资源
-                DBUtils.closeConnection(conn);
+                DBManager.closeConnection(conn);
             }
         }else{
-            System.out.println("账号或者密码为空，登陆失败，转发到pages/login/login.jsp");
+            //首次访问走这
             request.getRequestDispatcher("pages/login/login.jsp").forward(request, response);
         }
     }
@@ -93,28 +95,28 @@ public class LoginServlet extends HttpServlet {
             String sqlDelete = "delete from login_tokens where name = ?",sqlInsert = "insert into login_tokens values (?, ?, ?)";
             HttpSession session = request.getSession();
             int count;
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             //清理旧的login_token
             preparedStatement = conn.prepareStatement(sqlDelete);
-            preparedStatement.setString(1, (String) request.getSession().getAttribute("username"));
+            preparedStatement.setString(1, (String) request.getSession().getAttribute("user_name"));
             count = preparedStatement.executeUpdate();
             if(count != 0) System.out.println("清理了旧的token");
 
             preparedStatement = conn.prepareStatement(sqlInsert);
-            preparedStatement.setString(1, (String) session.getAttribute("username"));
+            preparedStatement.setString(1, (String) session.getAttribute("user_name"));
             preparedStatement.setString(2, login_token);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             preparedStatement.setString(3, LocalDateTime.now().format(formatter));
             count = preparedStatement.executeUpdate();
             if(count == 1)System.out.println("存储login_token成功");
-            else System.out.println("存储login_token失败");
+            else System.err.println("存储login_token失败");
         } catch (SQLException e) {
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
-            System.out.println("LoginServlet中出现sql异常");
+            System.err.println("LoginServlet中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
     }
     private boolean login_token_is_repetitive(String login_token) {
@@ -123,7 +125,7 @@ public class LoginServlet extends HttpServlet {
             PreparedStatement preparedStatement = null;
             String sql = "select * from login_tokens where login_token = ?";
             ResultSet rs = null;
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, login_token);
             rs = preparedStatement.executeQuery();
@@ -132,38 +134,12 @@ public class LoginServlet extends HttpServlet {
             }
             return false;
         } catch (SQLException e){
-            System.out.println("LoginServlet中出现sql异常");
+            System.err.println("LoginServlet中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
 
-
-    }
-    private void loginLogInsert(String name, String loginTime, String ip){
-        Connection conn = null;
-        try{
-            PreparedStatement preparedStatement = null;
-            String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
-            conn = DBUtils.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, loginTime);
-            preparedStatement.setString(3, ip);
-            int count = preparedStatement.executeUpdate();
-            if(count == 1){
-                System.out.println("LoginServlet中记录登陆成功");
-            } else{
-                System.out.println("LoginServlet中记录登陆失败");
-            }
-
-        } catch (SQLException e){
-            System.out.println("LoginFilter中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBUtils.closeConnection(conn);
-        }
     }
 }

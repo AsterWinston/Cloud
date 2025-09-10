@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-//@WebServlet("/error")
+@WebServlet("/error")
 public class ErrorServlet extends HttpServlet {
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)

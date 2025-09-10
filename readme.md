@@ -62,5 +62,6 @@
 4.初始化定时任务，清理数据库不需要的内容  
 
 ## 登陆状态记录
-1.十天免登录用使用cookie+db  
-2.session会话保持60分钟免登陆，记录username
+1.十天免登录用使用Cookie+DB  
+2.session会话保持60分钟免登陆，记录user_name  
+3.session记录用户文件存储根目录user_directory  

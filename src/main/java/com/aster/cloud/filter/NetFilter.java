@@ -1,6 +1,6 @@
 package com.aster.cloud.filter;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
@@ -32,6 +32,7 @@ public class NetFilter extends HttpFilter {
                 return;
             }
         } catch (SQLException e){
+            System.err.println("NetFilter中出现sql异常");
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
             throw new RuntimeException(e);
         }
@@ -48,23 +49,23 @@ public class NetFilter extends HttpFilter {
             String sql = "SELECT ip FROM ip_black_list WHERE ip = ?";
             ResultSet rs = null;
 
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, ip);  // 防止 SQL 注入，使用参数化查询
 
             rs = preparedStatement.executeQuery();
             if (rs.next()) {
-                DBUtils.closeConnection(conn);
+                DBManager.closeConnection(conn);
                 return false; // 跳出，避免继续执行后续操作
             }
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
             return true;
         } catch (SQLException e){
-            System.out.println("NetFilter中出现sql异常");
+            System.err.println("NetFilter中出现sql异常");
             e.printStackTrace();
             throw e;
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
 
     }

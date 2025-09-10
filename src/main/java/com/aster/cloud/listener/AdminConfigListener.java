@@ -21,7 +21,7 @@ public class AdminConfigListener implements ServletContextListener {
             // 通过类加载器加载配置文件
             inputStream = AdminConfigListener.class.getClassLoader().getResourceAsStream("conf/admin.properties");
             if (inputStream == null) {
-                System.out.println(("配置文件 'admin.properties' 未找到"));
+                System.err.println(("配置文件 'admin.properties' 未找到"));
                 throw new RuntimeException();
             }
 
@@ -45,7 +45,7 @@ public class AdminConfigListener implements ServletContextListener {
             System.out.println(("管理员配置已加载并设置到 ServletContext"));
 
         } catch (IOException e) {
-            System.out.println(("加载配置文件失败"));
+            System.err.println(("加载配置文件失败"));
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
@@ -54,7 +54,7 @@ public class AdminConfigListener implements ServletContextListener {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    System.out.println(("AdminConfigListener中关闭配置文件输入流失败"));
+                    System.err.println(("AdminConfigListener中关闭配置文件输入流失败"));
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }

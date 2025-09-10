@@ -1,6 +1,6 @@
 package com.aster.cloud.servlet;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,7 +21,7 @@ public class ResetPasswordServlet extends HttpServlet {
         System.out.println("经过resetPassword的请求" + request.getRequestURI());
         String old_password = (String) request.getParameter("old_password"), new_password = (String) request.getParameter("new_password");
         if(old_password != null && new_password != null){
-            if (resetPassword((String) request.getSession().getAttribute("username"), old_password, new_password)) {
+            if (resetPassword((String) request.getSession().getAttribute("user_name"), old_password, new_password)) {
                 request.setAttribute("reset_password_success", "重置密码成功");
                 request.getRequestDispatcher("pages/other/reset_password.jsp").forward(request, response);
             } else {
@@ -39,13 +39,13 @@ public class ResetPasswordServlet extends HttpServlet {
         try{
             PreparedStatement preparedStatement = null;
             String sql = "select * from user where name = ? and password = ?";
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, old_password);
             ResultSet rs = preparedStatement.executeQuery();
             if(!rs.next()){
-                System.out.println("验证原账号密码失败");
+                System.err.println("验证原账号密码失败");
                 return false;
             }
             sql = "update user set password = ? where name = ?";
@@ -54,17 +54,17 @@ public class ResetPasswordServlet extends HttpServlet {
             preparedStatement.setString(2, username);
             int count = preparedStatement.executeUpdate();
             if(count == 0){
-                System.out.println("更新用户"+ username +"的密码失败");
+                System.err.println("更新用户"+ username +"的密码失败");
                 return false;
             }
             System.out.println("更新用户" + username + "的密码成功");
             return true;
         } catch (SQLException e){
-            System.out.println("ResetPasswordServlet中出现sql异常");
+            System.err.println("ResetPasswordServlet中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
 
     }

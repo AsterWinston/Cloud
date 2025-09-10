@@ -1,0 +1,33 @@
+package com.aster.cloud.utils;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class LogManager {
+    public static void loginLogInsert(String name, String loginTime, String ip){
+        Connection conn = null;
+        try{
+            PreparedStatement preparedStatement = null;
+            String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
+            conn = DBManager.getConnection();
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, loginTime);
+            preparedStatement.setString(3, ip);
+            int count = preparedStatement.executeUpdate();
+            if(count == 1){
+                System.out.println("LoginFilter中记录登陆成功");
+            } else{
+                System.err.println("LoginFilter中记录登陆失败");
+            }
+
+        } catch (SQLException e){
+            System.err.println("LoginFilter中出现sql异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
+        }
+    }
+}

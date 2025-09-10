@@ -1,12 +1,10 @@
 package com.aster.cloud.listener;
 
-import com.aster.cloud.utils.DBUtils;
+import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +17,9 @@ public class StoreConfigListener implements ServletContextListener {
         InputStream inputStream = null;
         try {
             // 通过类加载器加载配置文件
-            inputStream = DBUtils.class.getClassLoader().getResourceAsStream("conf/store.properties");
+            inputStream = DBManager.class.getClassLoader().getResourceAsStream("conf/store.properties");
             if (inputStream == null) {
-                System.out.println(("配置文件 'store.properties' 未找到"));
+                System.err.println(("配置文件 'store.properties' 未找到"));
                 throw new RuntimeException();
             }
 
@@ -35,7 +33,7 @@ public class StoreConfigListener implements ServletContextListener {
             System.out.println(("文件存储位置已加载并设置到 ServletContext"));
 
         } catch (IOException e) {
-            System.out.println(("StoreConfigListener中加载配置文件失败"));
+            System.err.println(("StoreConfigListener中加载配置文件失败"));
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
@@ -44,7 +42,7 @@ public class StoreConfigListener implements ServletContextListener {
                 try {
                     inputStream.close();
                 } catch (IOException e) {
-                    System.out.println(("StoreConfigListener中关闭配置文件输入流失败"));
+                    System.err.println(("StoreConfigListener中关闭配置文件输入流失败"));
                     e.printStackTrace();
                     throw new RuntimeException(e);
                 }

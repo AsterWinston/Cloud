@@ -25,17 +25,17 @@ public class UUIDGenerator {
         String sql = "select * from user where dir_name = ?";
         ResultSet rs = null;
         try{
-            conn = DBUtils.getConnection();
+            conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, uuid);
             rs = preparedStatement.executeQuery();
             if(rs.next())return false;
         } catch (SQLException e) {
-            System.out.println("UUIDGenerator中出现异常");
+            System.err.println("UUIDGenerator中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-            DBUtils.closeConnection(conn);
+            DBManager.closeConnection(conn);
         }
         return true;
     }
