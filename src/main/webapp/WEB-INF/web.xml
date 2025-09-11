@@ -27,6 +27,11 @@
     </filter-mapping>
 
     <filter-mapping>
+        <filter-name>AdminFilter</filter-name>
+        <url-pattern>/backend</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
         <filter-name>RedirectFilter</filter-name>
         <url-pattern>/</url-pattern>
         <url-pattern>*.jsp</url-pattern>

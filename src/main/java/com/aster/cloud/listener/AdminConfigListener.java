@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 
 @WebListener
 public class AdminConfigListener implements ServletContextListener {
-
-
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         InputStream inputStream = null;

@@ -22,11 +22,11 @@ import java.time.format.DateTimeFormatter;
 public class LoginFilter extends HttpFilter {
     // 无需拦截的路径（如登录页、静态资源、验证码接口等），避免死循环
     private static final String[] EXCLUDE_URLS = {"login", ".css", ".js", ".png"};
-
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         System.out.println("经过LoginFilter的请求 = " + request.getRequestURI());
+
         String requestURI = request.getRequestURI();
         if(request_accessible(requestURI)){
             System.out.println("自由访问的资源，直接放行");

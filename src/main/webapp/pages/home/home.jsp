@@ -36,7 +36,7 @@
 
 
     <div class="container">
-        <!-- 左侧边栏（无修改） -->
+        <!-- 左侧边栏（已修复滚动问题） -->
         <div class="sidebar">
             <div class="user-info">
                 <div class="user-container">
@@ -44,13 +44,17 @@
                     <span class="user-name">${user_name}</span>
                 </div>
             </div>
-            <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
-            <a href="#" class="sidebar-link">前往后台</a>
-            <a href="${pageContext.request.contextPath}/logout" class="sidebar-link">安全退出</a>
+            <!-- 滚动容器 - 确保所有链接都在这个容器内 -->
+            <div class="sidebar-scroll-container">
+                <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
+                <a href="${pageContext.request.contextPath}/backend" class="sidebar-link">前往后台</a>
+                <a href="${pageContext.request.contextPath}/logout" class="sidebar-link">安全退出</a>
+                <a href="#" class="sidebar-link">关于我们</a>
+            </div>
         </div>
         <!-- 主内容区 -->
         <div class="main-content">
-            <!-- 顶部操作栏（无修改） -->
+            <!-- 顶部操作栏 -->
             <div class="top-bar">
                 <div class="path-container">
                     <span class="current-path">当前路径为：${relative_path}</span>
@@ -66,7 +70,7 @@
                 <div id="progressBar" style="height:8px; background:green; width:0%;"></div>
             </div>
 
-            <!-- 文件列表区域（关键修改：下载按钮用download-btn类，删除按钮保留delete-btn类） -->
+            <!-- 文件列表区域 -->
             <div class="file-list">
                 <c:forEach var="file" items="${dir_info.dir_list}">
                     <div class="file-item">
@@ -95,16 +99,6 @@
         </div>
     </div>
     <script src="${pageContext.request.contextPath}/js/home.js"></script>
-    <script>
-        var deleteSuccess = "${delete_success}";
-        if (deleteSuccess) {
-            alert("${delete_success}");
-        }
-        var deleteError = "${delete_error}";
-        if (deleteError) {
-            alert("${delete_error}");
-        }
 
-    </script>
 </body>
 </html>

@@ -20,9 +20,9 @@ public class NetFilter extends HttpFilter {
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         System.out.println("经过NetFilter的请求 = "+request.getRequestURI());
+
         // 设置请求的编码格式
         request.setCharacterEncoding("UTF-8");
-
         // 获取客户端 IP 地址
         String ip = request.getRemoteAddr();
         System.out.println("本次请求ip = " + ip);
