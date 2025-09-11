@@ -17,7 +17,7 @@ import java.sql.SQLException;
 public class ResetPasswordServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException{
+            throws ServletException, IOException {
         System.out.println("经过resetPassword的请求" + request.getRequestURI());
         String old_password = (String) request.getParameter("old_password"), new_password = (String) request.getParameter("new_password");
         if(old_password != null && new_password != null){

@@ -28,6 +28,7 @@
 
     <filter-mapping>
         <filter-name>RedirectFilter</filter-name>
+        <url-pattern>/</url-pattern>
         <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 

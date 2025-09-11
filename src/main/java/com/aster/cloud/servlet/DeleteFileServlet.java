@@ -21,12 +21,12 @@ public class DeleteFileServlet extends HttpServlet {
         request.setAttribute("after_file_or_dir_delete", new Object());
         if(file_or_dir_to_delete.startsWith(userDirectory.replace("\\", "/"))){
             if (FileManager.deleteFileOrDirectory(file_or_dir_to_delete)) {
-                request.setAttribute("delete_success", "删除文件（夹）成功");
+                request.setAttribute("delete_success", "删除成功");
             } else{
-                request.setAttribute("delete_error", "删除文件（夹）失败");
+                request.setAttribute("delete_error", "删除失败");
             }
         } else{
-            request.setAttribute("delete_error","拒绝执行删除");
+            request.setAttribute("delete_error","拒绝删除");
         }
         request.setAttribute("current_dir", PathManager.getParentPath(file_or_dir_to_delete));
         request.getRequestDispatcher("/home").forward(request, response);

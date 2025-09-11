@@ -24,6 +24,14 @@
         <input type="hidden" name="file_path_to_download" id="downloadFileInput"
         value="${current_dir}"/>
     </form>
+    <form id="uploadForm" method="post"
+          action="${pageContext.request.contextPath}/uploadFile"
+          enctype="multipart/form-data">
+        <input type="file" id="uploadInput" name="files"
+               multiple style="display:none;" />
+        <input type="hidden" name="path_to_upload" value="${current_dir}" />
+    </form>
+
 
     <div class="container">
         <!-- 左侧边栏（无修改） -->
@@ -51,6 +59,9 @@
                     <a href="javascript:void(0);" class="action-btn" id="uploadBtn">上传文件</a>
                     <a href="javascript:void(0);" class="action-btn" id="createFolderBtn">新建文件夹</a>
                 </div>
+            </div>
+            <div id="progressContainer" style="display:none; margin:10px 0;">
+                <div id="progressBar" style="height:8px; background:green; width:0%;"></div>
             </div>
 
             <!-- 文件列表区域（关键修改：下载按钮用download-btn类，删除按钮保留delete-btn类） -->
@@ -89,7 +100,7 @@
         }
         var deleteError = "${delete_error}";
         if (deleteError) {
-            alert("delete_error");
+            alert("${delete_error}");
         }
     </script>
 </body>

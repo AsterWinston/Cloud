@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 
 @WebServlet("/home")
@@ -30,11 +31,13 @@ public class HomeServlet extends HttpServlet {
 
         if(request.getAttribute("after_file_or_dir_delete") != null){
             currentDirectory = (String) request.getAttribute("current_dir");
-        } else{
+        } else if(request.getAttribute("after_file_upload") != null){
+            currentDirectory = (String) request.getAttribute("current_dir");
+        }else{
             currentDirectory = getNewCurrentDirectory(currentDirectory, userDirectory);
-            System.out.println("new_current_dir = " + currentDirectory);
             request.setAttribute("current_dir", currentDirectory);//当前即将使用请求路径
         }
+        System.out.println("new_current_dir = " + currentDirectory);
 
 
         DirectoryInformation di = getDI(currentDirectory);//根据当前请求路径返回信息
@@ -57,7 +60,7 @@ public class HomeServlet extends HttpServlet {
             newCurrentDirectory =  userDirectory;
         }else {
             //验证是否是用户自己的文件夹
-            if (currentDirectory.startsWith(userDirectory.replace("\\", "/")) && FileManager.isPathExists(currentDirectory)) newCurrentDirectory =  currentDirectory;
+            if (currentDirectory.startsWith(userDirectory.replace("\\", "/")) && PathManager.isPathExists(currentDirectory)) newCurrentDirectory =  currentDirectory;
             else newCurrentDirectory =  userDirectory;
         }
         return newCurrentDirectory.replace("\\", "/");

@@ -4,10 +4,30 @@ import com.aster.cloud.beans.FileOrDirInformation;
 import com.aster.cloud.utils.FileManager;
 import com.aster.cloud.utils.PathManager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class Test01 {
-    public static void main(String[] args) {
-        System.out.println("/" + PathManager.getRelativePath("D:/test", "D:/test/test/test").replace("\\", "/"));
+    public static void main(String[] args) throws IOException {
+        File file = new File("D:/cloud");
+        zipFolder(file, file.getName());
     }
+
+
+    private static void zipFolder(File folder, String baseName) throws IOException {
+        for (File file : folder.listFiles()) {
+            if (file.isDirectory()) {
+                zipFolder(file, baseName + "/" + file.getName());
+            } else {
+                try (FileInputStream fis = new FileInputStream(file)) {
+                    System.out.println((baseName + "/" + file.getName()));
+                }
+            }
+        }
+    }
+
 }
