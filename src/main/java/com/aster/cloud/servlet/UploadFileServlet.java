@@ -26,6 +26,5 @@ public class UploadFileServlet extends HttpServlet {
         } else{
             System.out.println("拒绝上传");
         }
-
     }
 }

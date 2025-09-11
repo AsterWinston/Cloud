@@ -29,15 +29,11 @@ public class HomeServlet extends HttpServlet {
         String currentDirectory = request.getParameter("current_dir");
         System.out.println("odl_current_dir = " + currentDirectory);//未被处理的请求路径
 
-        if(request.getAttribute("after_file_or_dir_delete") != null){
-            currentDirectory = (String) request.getAttribute("current_dir");
-        } else if(request.getAttribute("after_file_upload") != null){
-            currentDirectory = (String) request.getAttribute("current_dir");
-        }else{
-            currentDirectory = getNewCurrentDirectory(currentDirectory, userDirectory);
-            request.setAttribute("current_dir", currentDirectory);//当前即将使用请求路径
-        }
+
+        currentDirectory = getNewCurrentDirectory(currentDirectory, userDirectory);
+
         System.out.println("new_current_dir = " + currentDirectory);
+        request.setAttribute("current_dir", currentDirectory);
 
 
         DirectoryInformation di = getDI(currentDirectory);//根据当前请求路径返回信息

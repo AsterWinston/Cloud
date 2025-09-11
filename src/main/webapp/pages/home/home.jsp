@@ -5,7 +5,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>文件管理系统</title>
+    <meta name="contextPath" content="${pageContext.request.contextPath}">
+    <title>cloud</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
 </head>
 <body>
@@ -31,6 +32,7 @@
                multiple style="display:none;" />
         <input type="hidden" name="path_to_upload" value="${current_dir}" />
     </form>
+    <input type="hidden" name="current_dir" value="${current_dir}" id="currentDirInput">
 
 
     <div class="container">
@@ -39,7 +41,7 @@
             <div class="user-info">
                 <div class="user-container">
                     <span class="user-icon">👤</span>
-                    <span class="user-name">${username}</span>
+                    <span class="user-name">${user_name}</span>
                 </div>
             </div>
             <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
@@ -102,6 +104,7 @@
         if (deleteError) {
             alert("${delete_error}");
         }
+
     </script>
 </body>
 </html>
