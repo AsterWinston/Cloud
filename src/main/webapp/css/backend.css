@@ -7,6 +7,8 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
+    /* 与home页面保持一致，避免全局滚动条 */
+    overflow: hidden;
 }
 
 .container {
@@ -14,12 +16,14 @@ body {
     height: 100vh;
 }
 
-/* 侧边栏样式 */
+/* 侧边栏样式 - 完全复制home.css的侧边栏样式 */
 .sidebar {
     width: 200px;
     background-color: #f0f0f0;
     padding: 20px;
-    overflow-x: hidden;
+    /* 确保侧边栏高度固定为视口高度 */
+    height: 100vh;
+    box-sizing: border-box;
 }
 
 .user-info {
@@ -27,7 +31,7 @@ body {
     margin-bottom: 20px;
     text-align: center;
     padding: 10px 0;
-    word-wrap: break-word;
+    /* 固定用户信息在顶部 */
 }
 
 .user-container {
@@ -36,45 +40,41 @@ body {
     gap: 8px;
 }
 
-.sidebar-buttons-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: calc(100vh - 100px); /* 关键修改：使用max-height替代height */
+/* 滚动容器 - 使用与home页面完全相同的类名和样式 */
+.sidebar-scroll-container {
+    /* 与home页面相同的高度计算方式 */
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
     overflow-x: hidden;
+    padding-right: 5px;
 }
 
-/* 滚动条优化 - 仅在内容溢出时显示完整滚动条 */
-.sidebar-buttons-container::-webkit-scrollbar {
-    width: 0; /* 默认隐藏滚动条 */
-    transition: width 0.3s ease;
-}
-
-/* 鼠标悬停在侧边栏时显示滚动条 */
-.sidebar:hover .sidebar-buttons-container::-webkit-scrollbar {
+/* 滚动条样式 - 完全复制home.css的滚动条样式 */
+.sidebar-scroll-container::-webkit-scrollbar {
     width: 6px;
 }
 
-.sidebar-buttons-container::-webkit-scrollbar-track {
+.sidebar-scroll-container::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 
-.sidebar-buttons-container::-webkit-scrollbar-thumb {
+.sidebar-scroll-container::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 3px;
 }
 
-.sidebar-buttons-container::-webkit-scrollbar-thumb:hover {
+.sidebar-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
+/* 按钮样式 - 与home页面保持一致 */
 .sidebar-link {
     display: block;
+    margin-bottom: 10px;
     color: #333;
     text-decoration: none;
-    padding: 8px;
+    padding: 8px 5px;
     border-radius: 8px;
     background-color: #e0e0e0;
     text-align: center;
@@ -96,6 +96,7 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 100vh; /* 与home页面保持一致 */
 }
 
 .content-wrapper {
@@ -130,4 +131,9 @@ body {
 
 .scrollable-content::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+.user-name {
+    word-wrap: break-word;
+    white-space: normal;
 }

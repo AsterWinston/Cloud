@@ -44,7 +44,6 @@
                     <span class="user-name">${user_name}</span>
                 </div>
             </div>
-            <!-- 滚动容器 - 确保所有链接都在这个容器内 -->
             <div class="sidebar-scroll-container">
                 <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
                 <a href="${pageContext.request.contextPath}/backend" class="sidebar-link">前往后台</a>
