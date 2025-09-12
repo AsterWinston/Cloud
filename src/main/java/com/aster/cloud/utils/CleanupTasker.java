@@ -19,7 +19,7 @@ public class CleanupTasker {
             @Override
             public void run() {
                 Connection conn = null;
-                String sql = "delete from login_tokens where create_date < ?";
+                String sql = "delete from login_token where create_date < ?";
                 PreparedStatement preparedStatement = null;
                 long currentTimeMillis = System.currentTimeMillis();
                 long tenDaysAgoMillis = currentTimeMillis - TimeUnit.DAYS.toMillis(10);

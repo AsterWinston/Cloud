@@ -88,4 +88,15 @@ public class DBManager {
             }
         }
     }
+    public static void closeDataSource() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+            System.out.println("数据库连接池已关闭");
+        }
+
+        com.mysql.cj.jdbc.AbandonedConnectionCleanupThread.checkedShutdown();
+        System.out.println("MySQL 清理线程已停止");
+    }
+
+
 }

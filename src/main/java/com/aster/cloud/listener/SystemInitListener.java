@@ -1,5 +1,4 @@
 package com.aster.cloud.listener;
-
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.FileManager;
 import com.aster.cloud.utils.UUIDGenerator;
@@ -7,13 +6,9 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
+import java.sql.*;
+import java.time.LocalDateTime;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 @WebListener
 public class SystemInitListener implements ServletContextListener {
     @Override
@@ -91,13 +86,13 @@ public class SystemInitListener implements ServletContextListener {
                 String dir_name = UUIDGenerator.generateUniqueDirectoryName();
                 preparedStatement.setString(4, dir_name); // 默认目录名
                 FileManager.createDirectory((String)servletContext.getAttribute("file_store_path"), dir_name);
-                preparedStatement.setString(5, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+                preparedStatement.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
                 preparedStatement.executeUpdate();
                 System.out.println("管理员账户已创建");
             }
 
             //初始化login_tokens
-            sql = "CREATE TABLE if not exists login_tokens (\n" +
+            sql = "CREATE TABLE if not exists login_token (\n" +
                     "    name VARCHAR(64),  \n" +
                     "    login_token CHAR(255) PRIMARY KEY,  \n" +
                     "    create_date DATETIME,  \n" +

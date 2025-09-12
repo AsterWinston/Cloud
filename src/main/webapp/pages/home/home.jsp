@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/home.css">
 </head>
 <body>
+
     <form id="getInDirForm" method="post" action="${pageContext.request.contextPath}/home">
         <input type="hidden" name="current_dir" id="destinationDirInput"/>
     </form>
@@ -36,7 +37,6 @@
 
 
     <div class="container">
-        <!-- 左侧边栏（已修复滚动问题） -->
         <div class="sidebar">
             <div class="user-info">
                 <div class="user-container">
@@ -51,9 +51,7 @@
                 <a href="#" class="sidebar-link">关于我们</a>
             </div>
         </div>
-        <!-- 主内容区 -->
         <div class="main-content">
-            <!-- 顶部操作栏 -->
             <div class="top-bar">
                 <div class="path-container">
                     <span class="current-path">当前路径为：${relative_path}</span>
@@ -69,7 +67,6 @@
                 <div id="progressBar" style="height:8px; background:green; width:0%;"></div>
             </div>
 
-            <!-- 文件列表区域 -->
             <div class="file-list">
                 <c:forEach var="file" items="${dir_info.dir_list}">
                     <div class="file-item">

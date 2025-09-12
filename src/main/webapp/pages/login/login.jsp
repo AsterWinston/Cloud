@@ -36,7 +36,7 @@
 
                 <!-- 注册链接 -->
                 <div class="register-link">
-                    <a href="">Register an account</a>
+                    <a href="#">Register an account</a>
                 </div>
 
             </form>

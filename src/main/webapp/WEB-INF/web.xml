@@ -29,11 +29,15 @@
     <filter-mapping>
         <filter-name>AdminFilter</filter-name>
         <url-pattern>/backend</url-pattern>
+        <url-pattern>/addUser</url-pattern>
+        <url-pattern>/deleteUser</url-pattern>
+        <url-pattern>/resetUserPassword</url-pattern>
+        <url-pattern>/resetUserLimitVolume</url-pattern>
+        <url-pattern>/queryUserPassword</url-pattern>
     </filter-mapping>
 
     <filter-mapping>
         <filter-name>RedirectFilter</filter-name>
-        <url-pattern>/</url-pattern>
         <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 

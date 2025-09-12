@@ -59,7 +59,7 @@
 
             if (newPassword !== confirmPassword) {
                 e.preventDefault();
-                alert('New password and confirmation do not match!');
+                alert('两次输入的密码不一致!');
                 return false;
             }
         });

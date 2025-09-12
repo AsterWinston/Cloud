@@ -1,9 +1,6 @@
 package com.aster.cloud.servlet;
 
-import com.aster.cloud.utils.LogManager;
-import com.aster.cloud.utils.RandomTokenGenerator;
-import com.aster.cloud.utils.DBManager;
-import com.aster.cloud.utils.SessionManager;
+import com.aster.cloud.utils.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -23,29 +20,30 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         System.out.println("经过LoginServlet的请求 = " + request.getRequestURI());
         // 获取表单提交的用户名和密码
-        String name = request.getParameter("name");
+        String userName = request.getParameter("name");
         String password = request.getParameter("password");
 
         Connection conn = null;
         // 判断用户名和密码是否存在
-        if (name != null && password != null) {
+        if (userName != null && password != null) {
             try {
                 PreparedStatement preparedStatement = null;
                 ResultSet rs = null;
                 String sql = "SELECT name, password FROM user WHERE name = ? AND password = ?";
                 conn = DBManager.getConnection();
                 preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, name);
+                preparedStatement.setString(1, userName);
                 preparedStatement.setString(2, password);
                 rs = preparedStatement.executeQuery();
                 if (rs.next()) {
                     // 登录成功，session绑定用户的名字
-                    SessionManager.bindUserName(request, name);// 保存用户名到 session
-                    SessionManager.bindDirectory(request);
+                    SingleSessionManager.bindUserName(request, userName);// 保存用户名到 session
+                    SingleSessionManager.bindDirectory(request);
+                    HttpSessionManager.addSession(userName, request.getSession());
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                     String nowTime = LocalDateTime.now().format(formatter);
 
-                    LogManager.loginLogInsert(name, nowTime, request.getRemoteHost());
+                    LogManager.loginLogInsert(userName, nowTime, request.getRemoteHost());
                     //判断是否要存token
                     Object obj = request.getParameter("rememberMe");
                     if(obj != null) {
@@ -92,7 +90,7 @@ public class LoginServlet extends HttpServlet {
         Connection conn = null;
         try{
             PreparedStatement preparedStatement = null;
-            String sqlDelete = "delete from login_tokens where name = ?",sqlInsert = "insert into login_tokens values (?, ?, ?)";
+            String sqlDelete = "delete from login_token where name = ?", sqlInsert = "insert into login_token values (?, ?, ?)";
             HttpSession session = request.getSession();
             int count;
             conn = DBManager.getConnection();
@@ -123,7 +121,7 @@ public class LoginServlet extends HttpServlet {
         Connection conn = null;
         try{
             PreparedStatement preparedStatement = null;
-            String sql = "select * from login_tokens where login_token = ?";
+            String sql = "select * from login_token where login_token = ?";
             ResultSet rs = null;
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);

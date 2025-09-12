@@ -18,8 +18,8 @@ public class ResetPasswordServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("经过resetPassword的请求" + request.getRequestURI());
-        String old_password = (String) request.getParameter("old_password"), new_password = (String) request.getParameter("new_password");
+        System.out.println("经过ResetPasswordServlet的请求" + request.getRequestURI());
+        String old_password = request.getParameter("old_password"), new_password = request.getParameter("new_password");
         if(old_password != null && new_password != null){
             if (resetPassword((String) request.getSession().getAttribute("user_name"), old_password, new_password)) {
                 request.setAttribute("reset_password_success", "重置密码成功");

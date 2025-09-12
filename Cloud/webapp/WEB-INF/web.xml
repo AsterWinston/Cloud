@@ -27,11 +27,21 @@
     </filter-mapping>
 
     <filter-mapping>
+        <filter-name>AdminFilter</filter-name>
+        <url-pattern>/backend</url-pattern>
+        <url-pattern>/addUser</url-pattern>
+        <url-pattern>/deleteUser</url-pattern>
+        <url-pattern>/resetUserPassword</url-pattern>
+        <url-pattern>/resetUserLimitVolume</url-pattern>
+        <url-pattern>/queryUserPassword</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
         <filter-name>RedirectFilter</filter-name>
         <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 
-    <!--错误页重定向-->
+    <!--错误页重定向，开发阶段不要使用-->
 <!--    <error-page>-->
 <!--        <location>/error</location>-->
 <!--    </error-page>-->

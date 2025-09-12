@@ -7,7 +7,7 @@
    dir_name CHAR(32),
    create_date DATETIME
    );
-2. CREATE TABLE login_tokens (
+2. CREATE TABLE login_token (
    name VARCHAR(64),  
    login_token CHAR(255) PRIMARY KEY,  
    create_date DATETIME,  
@@ -56,13 +56,14 @@
 4.4修改其他用户密码    
 4.5查看用户密码  
 5.安全退出  
+
 ## 系统初始化
-1.初始化管理员配置信息，存储到ServletContext中，admin_name和admin_password    
-2.初始化存储配置，存储到ServletContext中，file_store_path      
-3.初始化表，根据配置信息，初始化表和初始化存储  
-4.初始化定时任务，清理数据库不需要的内容  
+1.初始化管理员配置信息，存储到ServletContext中，admin_name和admin_password      
+2.初始化存储配置，存储到ServletContext中，file_store_path       
+3.初始化数据库表，根据配置信息，初始化数据库表和初始化存储    
+4.初始化定时任务，清理数据库不需要的login_token    
 
 ## 登陆状态记录
 1.十天免登录用使用Cookie+DB  
 2.session会话保持60分钟免登陆，记录user_name  
-3.session记录用户文件存储根目录user_directory  
+3.session记录用户文件存储根目录user_directory   

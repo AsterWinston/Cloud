@@ -21,6 +21,7 @@ public class BackendServlet extends HttpServlet {
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        System.out.println("经过BackendServlet的请求 = " + request.getRequestURI());
         // 获取用户信息
         List<User> userList = getAllUsersInfo();
         Integer userCount = userList.size(); // 获取用户数量
@@ -62,6 +63,8 @@ public class BackendServlet extends HttpServlet {
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
         }
         return users;
     }

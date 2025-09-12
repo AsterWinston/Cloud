@@ -1,0 +1,139 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    /* 与home页面保持一致，避免全局滚动条 */
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* 侧边栏样式 - 完全复制home.css的侧边栏样式 */
+.sidebar {
+    width: 200px;
+    background-color: #f0f0f0;
+    padding: 20px;
+    /* 确保侧边栏高度固定为视口高度 */
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.user-info {
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 10px 0;
+    /* 固定用户信息在顶部 */
+}
+
+.user-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 滚动容器 - 使用与home页面完全相同的类名和样式 */
+.sidebar-scroll-container {
+    /* 与home页面相同的高度计算方式 */
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
+/* 滚动条样式 - 完全复制home.css的滚动条样式 */
+.sidebar-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.sidebar-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 按钮样式 - 与home页面保持一致 */
+.sidebar-link {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    text-decoration: none;
+    padding: 8px 5px;
+    border-radius: 8px;
+    background-color: #e0e0e0;
+    text-align: center;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-link:hover {
+    background-color: #d0d0d0;
+    transform: scale(1.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 主内容区样式 */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100vh; /* 与home页面保持一致 */
+}
+
+.content-wrapper {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.scrollable-content {
+    height: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+.scrollable-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.user-name {
+    word-wrap: break-word;
+    white-space: normal;
+}

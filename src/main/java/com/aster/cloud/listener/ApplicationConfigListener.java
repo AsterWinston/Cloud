@@ -2,6 +2,7 @@ package com.aster.cloud.listener;
 
 import com.aster.cloud.utils.CleanupTasker;
 
+import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -11,12 +12,12 @@ public class ApplicationConfigListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        CleanupTasker.startCleanupTask();
+        CleanupTasker.startCleanupTask();//定期清理数据库中过期的token
         System.out.println("ApplicationConfigListener执行成功");
     }
-
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         CleanupTasker.stopCleanupTask();
+        DBManager.closeDataSource();
     }
 }

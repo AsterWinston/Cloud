@@ -13,8 +13,9 @@ import java.io.IOException;
 @WebServlet("/downloadFile")
 public class DownloadFileServlet extends HttpServlet {
     @Override
-    public void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        System.out.println("经过DownloadFileServlet的请求 = " + request.getRequestURI());
         String file_path_to_download = request.getParameter("file_path_to_download");
         String userDirectory = (String) request.getSession().getAttribute("user_directory");
         System.out.println("file_path_to_download = " + file_path_to_download);

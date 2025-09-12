@@ -19,6 +19,7 @@ public class AdminFilter extends HttpFilter {
             chain.doFilter(request, response);
         } else {
             System.out.println("非管理员访问");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
 
     }

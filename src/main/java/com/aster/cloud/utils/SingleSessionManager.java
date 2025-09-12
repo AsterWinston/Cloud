@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SessionManager {
+public class SingleSessionManager {
     public static void bindDirectory(HttpServletRequest request){
         //session绑定用户的根目录
         HttpSession session = request.getSession();
@@ -36,6 +36,8 @@ public class SessionManager {
             System.err.println("SessionManager中出现sql异常");
             e.printStackTrace();
             throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
         }
 
     }

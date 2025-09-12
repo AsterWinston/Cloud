@@ -3,57 +3,223 @@ let isUploading = false; // 上传状态
 const userDirectory = document.getElementById("destinationDirInput").value || ""; // 用于更新相对路径显示
 const contextPathMeta = document.querySelector('meta[name="contextPath"]');
 const contextPath = contextPathMeta ? contextPathMeta.getAttribute('content') : "";
-//上传文件，ajax
-document.getElementById("uploadBtn").addEventListener("click", function() {
-    if(isUploading){
-        alert("当前有文件正在上传，请等待上传完成！");
-        return;
-    }
-    document.getElementById("uploadInput").click();
+let currentXHR = null;
+
+//上传文件ajax
+// 页面加载完成后初始化
+document.addEventListener("DOMContentLoaded", function() {
+    initUploadEvents();
 });
 
-document.getElementById("uploadInput").addEventListener("change", function() {
-    const fileInput = this;
-    const form = document.getElementById("uploadForm");
+/**
+ * 初始化上传事件
+ */
+function initUploadEvents() {
+    const uploadBtn = document.getElementById("uploadBtn");
+    const uploadInput = document.getElementById("uploadInput");
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
+    const pathInput = document.querySelector('#uploadForm input[name="path_to_upload"]');
 
-    if(fileInput.files.length === 0) return;
-
-    isUploading = true; // 开始上传
-    progressContainer.style.display = "block";
-    progressBar.style.width = "0%";
-
-    const formData = new FormData(form);
-    const xhr = new XMLHttpRequest();
-
-    xhr.open("POST", form.action, true);
-
-    xhr.upload.addEventListener("progress", function(e) {
-        if(e.lengthComputable) {
-            const percent = (e.loaded / e.total) * 100;
-            progressBar.style.width = percent + "%";
+    // 上传按钮点击事件
+    uploadBtn.addEventListener("click", function() {
+        if (isUploading) {
+            alert("当前有文件正在上传，请等待完成后重试！");
+            return;
         }
+        uploadInput.click();
     });
 
-    xhr.onload = function() {
-        isUploading = false; // 上传结束
-        progressContainer.style.display = "none";
+    // 文件选择后处理（允许空文件）
+    uploadInput.addEventListener("change", function() {
+        const selectedFiles = this.files;
+        if (selectedFiles.length === 0) return;
+
+        // 显示进度条
+        progressContainer.style.display = "block";
         progressBar.style.width = "0%";
 
-        if(xhr.status === 200) {
-            alert("上传成功");
-        } else {
-            alert("上传失败");
+        // 计算总文件大小(MB) - 保留4位小数，支持空文件(0MB)
+        let totalFileSizeByte = 0;
+        for (let i = 0; i < selectedFiles.length; i++) {
+            totalFileSizeByte += selectedFiles[i].size;
         }
+        const totalFileSizeMB = (totalFileSizeByte / (1024 * 1024)).toFixed(4);
 
-        // 刷新页面显示新文件
-        window.location.reload();
+        // 发送预检请求
+        const precheckXHR = new XMLHttpRequest();
+        precheckXHR.open("POST", `${contextPath}/precheckUpload`, true);
+        precheckXHR.setRequestHeader("Content-Type", "application/json");
+
+        // 预检请求成功处理
+        precheckXHR.onload = function() {
+            handlePrecheckResponse(
+                precheckXHR,
+                selectedFiles,
+                pathInput.value,
+                progressBar,
+                progressContainer,
+                uploadInput
+            );
+        };
+
+        // 预检请求错误处理
+        precheckXHR.onerror = function() {
+            alert("网络异常：无法连接到服务器，请检查网络");
+            resetUploadUI(progressContainer, uploadInput);
+        };
+
+        // 发送预检数据（包含空文件的0MB）
+        precheckXHR.send(JSON.stringify({
+            path_to_upload: pathInput.value,
+            total_file_size_mb: totalFileSizeMB
+        }));
+    });
+}
+
+/**
+ * 处理预检请求响应
+ */
+function handlePrecheckResponse(xhr, files, uploadPath, progressBar, progressContainer, uploadInput) {
+    // 检查响应内容类型
+    const contentType = xhr.getResponseHeader("Content-Type");
+    if (!contentType || !contentType.includes("application/json")) {
+        alert(`服务器响应格式错误：期望JSON，实际为${contentType || '未知类型'}`);
+        resetUploadUI(progressContainer, uploadInput);
+        return;
     }
 
-    xhr.send(formData);
-});
+    // 解析JSON响应
+    let res;
+    try {
+        res = JSON.parse(xhr.responseText);
+    } catch (e) {
+        alert(`服务器返回无效JSON：${xhr.responseText.substring(0, 100)}...`);
+        resetUploadUI(progressContainer, uploadInput);
+        return;
+    }
 
+    // 处理不同状态码
+    switch(xhr.status) {
+        case 200:
+            if (res.status === "allow") {
+                startFileUpload(files, uploadPath, progressBar, progressContainer, uploadInput);
+            } else {
+                alert("上传失败：" + (res.message || "未知错误"));
+                resetUploadUI(progressContainer, uploadInput);
+            }
+            break;
+
+        case 413:
+            alert("容量不足：" + (res.message || "文件大小超过存储限制"));
+            resetUploadUI(progressContainer, uploadInput);
+            break;
+
+        case 403:
+            alert("权限错误：" + (res.message || "无权限上传至该路径"));
+            resetUploadUI(progressContainer, uploadInput);
+            break;
+
+        default:
+            alert(`服务器错误：状态码${xhr.status}，${res.message || "请联系管理员"}`);
+            resetUploadUI(progressContainer, uploadInput);
+    }
+}
+
+/**
+ * 执行文件上传
+ */
+function startFileUpload(files, uploadPath, progressBar, progressContainer, uploadInput) {
+    isUploading = true;
+    const formData = new FormData();
+
+    // 添加所有文件（包括空文件）
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
+    formData.append("path_to_upload", uploadPath);
+
+    currentXHR = new XMLHttpRequest();
+    currentXHR.open("POST", `${contextPath}/uploadFile`, true);
+
+    // 进度监听
+    currentXHR.upload.addEventListener("progress", function(e) {
+        if (!isUploading || !e.lengthComputable) return;
+        const percent = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = percent + "%";
+    });
+
+    // 上传响应处理
+    currentXHR.onreadystatechange = function() {
+        if (currentXHR.readyState === 4) {
+            handleUploadResponse(currentXHR, progressContainer, uploadInput);
+        }
+    };
+
+    // 上传错误处理
+    currentXHR.onerror = function() {
+        alert("网络异常：上传过程中连接中断");
+        resetUploadUI(progressContainer, uploadInput);
+    };
+
+    currentXHR.send(formData);
+}
+
+/**
+ * 处理上传响应
+ */
+function handleUploadResponse(xhr, progressContainer, uploadInput) {
+    resetUploadUI(progressContainer, uploadInput);
+
+    // 处理TCP连接被关闭的情况
+    if (xhr.status === 0) {
+        alert("容量不足：文件大小超过存储限制");
+        return;
+    }
+
+    // 检查响应内容类型
+    const contentType = xhr.getResponseHeader("Content-Type");
+    if (!contentType || !contentType.includes("application/json")) {
+        alert(`服务器响应格式错误：期望JSON，实际为${contentType || '未知类型'}`);
+        return;
+    }
+
+    // 解析响应
+    let res;
+    try {
+        res = JSON.parse(xhr.responseText);
+    } catch (e) {
+        alert(`服务器返回无效JSON：${xhr.responseText.substring(0, 100)}...`);
+        return;
+    }
+
+    // 处理响应
+    if (xhr.status === 200) {
+        if (res.status === "success") {
+            alert("上传成功！");
+            window.location.reload();
+        } else {
+            alert("上传失败：" + res.message);
+        }
+    } else if (xhr.status === 413) {
+        alert("容量不足：" + (res.message || "文件大小超过存储限制"));
+    } else {
+        alert(`上传失败：服务器错误（状态码${xhr.status}）`);
+    }
+}
+
+/**
+ * 重置上传UI状态
+ */
+function resetUploadUI(progressContainer, uploadInput) {
+    isUploading = false;
+    currentXHR = null;
+    progressContainer.style.display = "none";
+    document.getElementById("progressBar").style.width = "0%";
+    uploadInput.value = "";
+}
+
+//其他功能
 //检查上传状态
 function checkUploadStatus() {
     if(isUploading) {

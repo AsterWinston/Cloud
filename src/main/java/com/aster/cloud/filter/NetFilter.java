@@ -32,14 +32,11 @@ public class NetFilter extends HttpFilter {
                 return;
             }
         } catch (SQLException e){
-            System.err.println("NetFilter中出现sql异常");
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
             throw new RuntimeException(e);
         }
-
         // 如果 IP 不在黑名单中，继续处理请求
         chain.doFilter(request, response);
-        // 过滤器结束后
     }
     private boolean ip_accessible(String ip) throws SQLException {
         // 连接数据库并查询 IP 是否在黑名单中
@@ -48,18 +45,11 @@ public class NetFilter extends HttpFilter {
             PreparedStatement preparedStatement = null;
             String sql = "SELECT ip FROM ip_black_list WHERE ip = ?";
             ResultSet rs = null;
-
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, ip);  // 防止 SQL 注入，使用参数化查询
-
+            preparedStatement.setString(1, ip);
             rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                DBManager.closeConnection(conn);
-                return false; // 跳出，避免继续执行后续操作
-            }
-            DBManager.closeConnection(conn);
-            return true;
+            return !rs.next(); // 跳出，避免继续执行后续操作
         } catch (SQLException e){
             System.err.println("NetFilter中出现sql异常");
             e.printStackTrace();
@@ -67,6 +57,5 @@ public class NetFilter extends HttpFilter {
         } finally {
             DBManager.closeConnection(conn);
         }
-
     }
 }

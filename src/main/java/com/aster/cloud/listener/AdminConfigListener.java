@@ -39,7 +39,6 @@ public class AdminConfigListener implements ServletContextListener {
             // 设置到 ServletContext 中
             sc.setAttribute("admin_name", name);
             sc.setAttribute("admin_password", password);
-
             System.out.println(("管理员配置已加载并设置到 ServletContext"));
 
         } catch (IOException e) {

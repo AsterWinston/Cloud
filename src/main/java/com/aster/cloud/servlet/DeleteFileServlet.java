@@ -1,45 +1,43 @@
 package com.aster.cloud.servlet;
 
 import com.aster.cloud.utils.FileManager;
-import com.aster.cloud.utils.PathManager;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 
 import java.io.IOException;
+
 @WebServlet("/deleteFile")
 public class DeleteFileServlet extends HttpServlet {
+
     @Override
-    public void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        // 获取要删除的文件或目录路径
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        System.out.println("经过DeleteFileServlet的请求 = " + request.getRequestURI());
+
+        response.setContentType("application/json");
         String fileOrDirToDelete = request.getParameter("file_or_dir_to_delete");
         String userDirectory = (String) request.getSession().getAttribute("user_directory");
 
-        // 用于调试，打印出接收到的路径
-        System.out.println("file_or_dir_to_delete = " + fileOrDirToDelete);
+        JSONObject json = new JSONObject();
 
-        // 检查是否有权限删除该文件或文件夹
         if (fileOrDirToDelete != null && fileOrDirToDelete.startsWith(userDirectory.replace("\\", "/"))) {
-            // 删除文件或目录
             boolean deleteSuccess = FileManager.deleteFileOrDirectory(fileOrDirToDelete);
 
-            // 设置删除结果的响应
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-
             if (deleteSuccess) {
-                // 删除成功，返回成功的 JSON 响应
-                response.getWriter().write("{\"status\": \"success\", \"message\": \"删除成功\"}");
+                json.put("status", "success");
+                json.put("message", "删除成功");
             } else {
-                // 删除失败，返回失败的 JSON 响应
-                response.getWriter().write("{\"status\": \"error\", \"message\": \"删除失败\"}");
+                json.put("status", "error");
+                json.put("message", "删除失败");
             }
         } else {
-            // 如果没有权限删除，返回拒绝的响应
-            response.getWriter().write("{\"status\": \"error\", \"message\": \"拒绝删除\"}");
+            json.put("status", "error");
+            json.put("message", "拒绝删除");
         }
+
+        response.getWriter().write(json.toString());
     }
 }

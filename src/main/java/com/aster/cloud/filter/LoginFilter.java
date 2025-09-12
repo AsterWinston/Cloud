@@ -1,6 +1,7 @@
 package com.aster.cloud.filter;
 
-import com.aster.cloud.utils.SessionManager;
+import com.aster.cloud.utils.HttpSessionManager;
+import com.aster.cloud.utils.SingleSessionManager;
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.LogManager;
 import jakarta.servlet.FilterChain;
@@ -21,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 @WebFilter(filterName = "LoginFilter") // 关键：补充拦截路径
 public class LoginFilter extends HttpFilter {
     // 无需拦截的路径（如登录页、静态资源、验证码接口等），避免死循环
-    private static final String[] EXCLUDE_URLS = {"login", ".css", ".js", ".png"};
+    private static final String[] EXCLUDE_URLS = {"login", ".css", ".js"};
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -43,7 +44,7 @@ public class LoginFilter extends HttpFilter {
 
     }
     private boolean request_accessible(String requestURI){
-        for(String s: EXCLUDE_URLS)if(requestURI.endsWith(s)){
+        for(String s: EXCLUDE_URLS) if(requestURI.endsWith(s)){
             return true;
         }
         return false;
@@ -73,7 +74,7 @@ public class LoginFilter extends HttpFilter {
         try{
             PreparedStatement preparedStatement = null;
             ResultSet rs = null;
-            String sql = "SELECT name, create_date FROM login_tokens WHERE login_token = ?";
+            String sql = "SELECT name, create_date FROM login_token WHERE login_token = ?";
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, loginToken);
@@ -87,14 +88,15 @@ public class LoginFilter extends HttpFilter {
                 if(localTimeTimeStamp-createTimeTimeStamp<1000*3600*24*10){
                     //loginToken认证成功，session绑定信息
                     String userName = rs.getString("name");
-                    SessionManager.bindUserName(request, userName);
-                    SessionManager.bindDirectory(request);
+                    SingleSessionManager.bindUserName(request, userName);
+                    HttpSessionManager.addSession(userName, request.getSession());
+                    SingleSessionManager.bindDirectory(request);//绑定用户目录，防止查询频繁
                     String nowTime = LocalDateTime.now().format(formatter);
                     LogManager.loginLogInsert(userName, nowTime, request.getRemoteHost());
                     System.out.println("token认证成功，设置session后，放行");
                     chain.doFilter(request, response);
                 }else {
-                    sql = "delete from login_tokens where login_token = ?";
+                    sql = "delete from login_token where login_token = ?";
                     preparedStatement = conn.prepareStatement(sql);
                     preparedStatement.setString(1, loginToken);
                     int count = preparedStatement.executeUpdate();

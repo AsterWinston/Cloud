@@ -5,6 +5,8 @@
 }
 body {
     font-family: Arial, sans-serif;
+    /* 确保body没有滚动条干扰 */
+    overflow: hidden;
 }
 .container {
     display: flex;
@@ -14,8 +16,9 @@ body {
     width: 200px;
     background-color: #f0f0f0;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
+    /* 确保侧边栏高度固定为视口高度 */
+    height: 100vh;
+    box-sizing: border-box;
 }
 
 .user-info {
@@ -23,6 +26,7 @@ body {
     margin-bottom: 20px;
     text-align: center;
     padding: 10px 0;
+    /* 固定用户信息在顶部 */
 }
 
 .user-container {
@@ -31,24 +35,53 @@ body {
     gap: 8px;
 }
 
+/* 侧边栏滚动容器 - 关键修复 */
+.sidebar-scroll-container {
+    /* 计算可用高度：100%视口高度 - 内边距(40px) - 用户信息高度(约60px) */
+    max-height: calc(100vh - 100px);
+    /* 超出高度时显示垂直滚动条 */
+    overflow-y: auto;
+    /* 禁止水平滚动 */
+    overflow-x: hidden;
+    /* 添加内边距使滚动条不紧贴内容 */
+    padding-right: 5px;
+}
+
+/* 强制显示滚动条轨道（即使内容未超出）以便用户知道可以滚动 */
+.sidebar-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
 .sidebar-link {
     display: block;
     margin-bottom: 10px;
     color: #333;
     text-decoration: none;
-    padding: 5px;
+    padding: 8px 5px;
     border-radius: 8px;
     background-color: #e0e0e0;
     text-align: center;
+    /* 防止文字过长导致水平滚动 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+.sidebar-link {
+    /* 其他样式... */
+    transition: all 0.3s ease; /* 关键：定义所有属性变化的过渡动画 */
+}
+
 .sidebar-link:hover {
     background-color: #d0d0d0;
+    transform: scale(1.03); /* 鼠标悬停时轻微放大 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 鼠标悬停时添加阴影 */
 }
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    height: 100vh;
 }
 .top-bar {
     display: flex;
@@ -138,24 +171,24 @@ body {
     text-align: center;
 }
 
-/* 关键：新增下载按钮样式（绿色，与上传按钮一致） */
+/* 下载按钮样式 */
 .download-btn {
     padding: 5px 10px;
     border-radius: 8px;
-    background-color: #4CAF50; /* 绿色，同上传按钮 */
+    background-color: #4CAF50;
     color: white;
     text-decoration: none;
     white-space: nowrap;
 }
 .download-btn:hover {
-    background-color: #45a049; /*  hover深色，同上传按钮 */
+    background-color: #45a049;
 }
 
-/* 删除按钮样式（保留红色） */
+/* 删除按钮样式 */
 .delete-btn {
     padding: 5px 10px;
     border-radius: 8px;
-    background-color: #f44336; /* 红色，保持原有样式 */
+    background-color: #f44336;
     color: white;
     text-decoration: none;
     white-space: nowrap;
@@ -169,22 +202,27 @@ body {
     white-space: normal;
 }
 
-/* 滚动条样式 */
+/* 滚动条样式统一 */
 .path-container::-webkit-scrollbar,
-.file-name-container::-webkit-scrollbar { /* 文件名容器和路径容器共用滚动条样式 */
+.file-name-container::-webkit-scrollbar,
+.sidebar-scroll-container::-webkit-scrollbar {
     height: 6px;
+    width: 6px;
 }
 .path-container::-webkit-scrollbar-track,
-.file-name-container::-webkit-scrollbar-track {
+.file-name-container::-webkit-scrollbar-track,
+.sidebar-scroll-container::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 .path-container::-webkit-scrollbar-thumb,
-.file-name-container::-webkit-scrollbar-thumb {
+.file-name-container::-webkit-scrollbar-thumb,
+.sidebar-scroll-container::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 3px;
 }
 .path-container::-webkit-scrollbar-thumb:hover,
-.file-name-container::-webkit-scrollbar-thumb:hover {
+.file-name-container::-webkit-scrollbar-thumb:hover,
+.sidebar-scroll-container::-webkit-scrollbar-thumb:hover {
     background: #555;
 }

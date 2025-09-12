@@ -1,17 +1,23 @@
 package com.aster.cloud.utils;
 
 import com.aster.cloud.beans.FileOrDirInformation;
+import com.oracle.wls.shaded.org.apache.regexp.RE;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,12 +51,7 @@ public class FileManager {
             System.out.println("文件夹已存在: " + directoryPath);
         }
     }
-
-    /**
-     * 获取目录下所有文件和文件夹的信息
-     * @param dirPath 目录路径
-     * @return List<FileOrDirInformation>
-     */
+    
     public static List<FileOrDirInformation> getFileOrDirInfo(String dirPath) {
         List<FileOrDirInformation> list = new ArrayList<>();
         File dir = new File(dirPath);
@@ -75,7 +76,7 @@ public class FileManager {
                 size = (int) (file.length() / (1024 * 1024)); // 转换为MB，取整
                 type = FileOrDirInformation.Type.FILE;
             } else { // 文件夹
-                size = getDirectorySize(file); // 文件夹大小
+                size = Math.toIntExact(getDirectorySize(file) / (1024 * 1024)); // 文件夹大小
                 type = FileOrDirInformation.Type.DIRECTORY;
             }
 
@@ -84,24 +85,6 @@ public class FileManager {
 
         return list;
     }
-
-    /**
-     * 递归计算文件夹中所有文件大小（MB）
-     */
-    private static int getDirectorySize(File dir) {
-        int total = 0;
-        File[] files = dir.listFiles();
-        if (files == null) return 0;
-        for (File file : files) {
-            if (file.isFile()) {
-                total += file.length();
-            } else if (file.isDirectory()) {
-                total += getDirectorySize(file);
-            }
-        }
-        return (int) (total / (1024 * 1024)); // 转换为MB
-    }
-    //保证了path是linux样式，即D:/test或/home
 
     public static boolean deleteFileOrDirectory(String path) {
         File file = new File(path);
@@ -201,23 +184,25 @@ public class FileManager {
             }
         }
     }
-    public static void uploadFile(HttpServletRequest request, HttpServletResponse response, String currentDir) throws IOException, ServletException {
-        // 确保目录存在
+    public static boolean uploadFile(HttpServletRequest request, HttpServletResponse response,
+                                     String currentDir) throws IOException, ServletException {
+        // 创建上传目录（如果不存在）
         File uploadDir = new File(currentDir);
         if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
+            if (!uploadDir.mkdirs()) {
+                return false; // 目录创建失败
+            }
         }
 
-        // 遍历所有上传的 Part
-        Collection<Part> parts = request.getParts();
-        for (Part part : parts) {
+        // 处理上传的文件
+        for (Part part : request.getParts()) {
             String fileName = part.getSubmittedFileName();
+            if (fileName == null || fileName.isEmpty()) {
+                continue; // 跳过非文件字段
+            }
 
-            // 有些 Part 不是文件（比如普通表单字段），要过滤掉
-            if (fileName == null || fileName.isEmpty()) continue;
-
+            // 保存文件
             File file = new File(uploadDir, fileName);
-
             try (InputStream is = part.getInputStream();
                  FileOutputStream fos = new FileOutputStream(file)) {
 
@@ -226,10 +211,95 @@ public class FileManager {
                 while ((len = is.read(buffer)) != -1) {
                     fos.write(buffer, 0, len);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
             }
         }
-
+        return true;
     }
 
+    /**
+     * 获取当前已使用空间(MB)
+     */
+    public static long getSizeNow(HttpServletRequest request) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        String userName = (String) request.getSession().getAttribute("user_name");
 
+        try {
+            conn = DBManager.getConnection();
+            pstmt = conn.prepareStatement("select dir_name from user where name = ?");
+            pstmt.setString(1, userName);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                String dirName = rs.getString("dir_name");
+                String basePath = (String) request.getServletContext().getAttribute("file_store_path");
+                String fullDir = basePath.replace("\\", "/") + "/" + dirName;
+
+                return getDirectorySize(new File(fullDir)) / (1024L * 1024);
+            } else {
+                throw new RuntimeException("用户目录不存在");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("数据库操作错误：" + e.getMessage());
+        } finally {
+            DBManager.closeConnection(conn);
+            try { if (rs != null) rs.close(); } catch (SQLException e) {}
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+        }
+    }
+
+    /**
+     * 获取空间限制(MB)
+     */
+    public static long getLimitSize(HttpServletRequest request) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        String userName = (String) request.getSession().getAttribute("user_name");
+
+        try {
+            conn = DBManager.getConnection();
+            pstmt = conn.prepareStatement("select limit_volume from user where name = ?");
+            pstmt.setString(1, userName);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getLong("limit_volume");
+            } else {
+                throw new RuntimeException("未找到用户存储限制");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("数据库操作错误：" + e.getMessage());
+        } finally {
+            DBManager.closeConnection(conn);
+            try { if (rs != null) rs.close(); } catch (SQLException e) {}
+            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
+        }
+    }
+
+    /**
+     * 计算目录总大小，单位为Byte
+     */
+    public static long getDirectorySize(File directory) {
+        if (!directory.exists() || !directory.isDirectory()) {
+            throw new IllegalArgumentException("无效的目录: " + directory.getAbsolutePath());
+        }
+
+        long size = 0;
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    size += file.length();
+                } else if (file.isDirectory()) {
+                    size += getDirectorySize(file);
+                }
+            }
+        }
+        return size;
+    }
 }
