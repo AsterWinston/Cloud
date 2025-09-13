@@ -6,7 +6,7 @@
     <meta name="contextPath" content="${pageContext.request.contextPath}">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/backend.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user_management.css">
-    <script src="${pageContext.request.contextPath}/js/user_management.js"></script>
+
 </head>
 <body>
     <form id="navigateForm" method="post" action="${pageContext.request.contextPath}/backend">
@@ -26,7 +26,7 @@
             <div class="sidebar-scroll-container">
                 <a href="#" class="sidebar-link" onclick="goToPage('user_management')">用户管理</a>
                 <a href="#" class="sidebar-link" onclick="goToPage('access_control')">访问控制</a>
-                <a href="#" class="sidebar-link" onclick="goToPage('login_logs')">登录日志</a>
+                <a href="#" class="sidebar-link" onclick="goToPage('login_log')">登录日志</a>
                 <a href="${pageContext.request.contextPath}/home" class="sidebar-link">返回首页</a>
                 <a href="${pageContext.request.contextPath}/logout" class="sidebar-link">安全退出</a>
             </div>
@@ -35,6 +35,7 @@
         <div class="main-content">
             <div class="content-wrapper">
                 <div class="scrollable-content">
+
                     <!-- 顶部功能区域 -->
                     <div class="top-function-area">
                         <div class="info-display">查到${user_count}条记录</div>
@@ -71,7 +72,6 @@
             </div>
         </div>
     </div>
-    <script src="${pageContext.request.contextPath}/js/home.js"></script>
     <script>
         function goToPage(page) {
             // 动态设置隐藏表单的目标页面
@@ -80,5 +80,6 @@
             document.getElementById("navigateForm").submit();
         }
     </script>
+    <script src="${pageContext.request.contextPath}/js/user_management.js"></script>
 </body>
 </html>

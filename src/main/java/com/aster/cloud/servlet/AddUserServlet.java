@@ -3,6 +3,7 @@ package com.aster.cloud.servlet;
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.FileManager;
 import com.aster.cloud.utils.UUIDGenerator;
+import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -42,16 +43,12 @@ public class AddUserServlet extends HttpServlet {
     public boolean createUser(HttpServletRequest request, String userName, String userPassword, String limitVolume){
         if(userName.length()>64 || userPassword.length()>128)return false;
         if(Integer.parseInt(limitVolume) <= 0)return false;
+        if(UserManager.isUserExists(userName))return false;
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         String sql = null;
         try {
             conn = DBManager.getConnection();
-            sql = "select * from user where name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            ResultSet rs = preparedStatement.executeQuery();
-            if(rs.next())return false;
             sql = "insert into user values (?, ?, ?, ?, ?)";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);

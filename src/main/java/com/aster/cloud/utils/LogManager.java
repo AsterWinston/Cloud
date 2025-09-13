@@ -30,4 +30,38 @@ public class LogManager {
             DBManager.closeConnection(conn);
         }
     }
+    public static void clearLog(){
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "truncate table login_log";
+        try {
+            conn = DBManager.getConnection();
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e){
+            System.err.println("LogManager中出现了sql异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
+        }
+
+    }
+    public static void deleteLogById(String id){
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "delete from login_log where id = ?";
+        try {
+            conn = DBManager.getConnection();
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setInt(1, Integer.parseInt(id));
+            preparedStatement.executeUpdate();
+        } catch(SQLException e){
+            System.err.println("LogManager中出现sql异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
+        }
+    }
 }

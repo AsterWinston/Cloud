@@ -1,0 +1,216 @@
+
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.scrollable-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 顶部功能区域 */
+.top-function-area {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    gap: 15px;
+    position: sticky;  /* 新增：固定在顶部 */
+    top: 0;            /* 新增：距离顶部0 */
+    z-index: 10;       /* 新增：覆盖内容 */
+}
+
+/* 左侧信息显示 */
+.info-display {
+    white-space: nowrap;
+    overflow-x: auto;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 1;
+}
+
+/* 右侧按钮容器 */
+.top-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* 顶部功能按钮 */
+.top-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    background-color: #f44336;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.top-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* 日志列表滚动容器 */
+.log-list-scroll {
+    flex: 1;
+    min-height: 0;          /* 新增：解决 flex 子元素高度被压缩问题 */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+/* 单条日志项 */
+.log-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #fff;
+    margin-bottom: 5px;
+}
+
+.log-item:last-child {
+    border-bottom: none;
+}
+
+/* 日志信息项容器 */
+.log-info-item {
+    flex: 1;
+    white-space: nowrap;
+    overflow-x: auto;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;       /* 新增：和 user-management 一致 */
+}
+
+/* 日志操作按钮容器 */
+.log-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* 日志操作按钮 */
+.log-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    background-color: #f44336;
+    color: white;
+}
+
+.log-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* 底部功能区域 - 固定在底部 */
+.bottom-function-area {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    gap: 15px;
+}
+
+/* 每页显示选择器 */
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.page-size-selector select {
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* 分页按钮容器 */
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* 分页按钮 */
+.pagination-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.pagination-btn:hover {
+    background-color: #45a049;
+}
+
+/* 滚动条样式补充 */
+.info-display::-webkit-scrollbar,
+.log-info-item::-webkit-scrollbar,
+.log-list-scroll::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.info-display::-webkit-scrollbar-track,
+.log-info-item::-webkit-scrollbar-track,
+.log-list-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.info-display::-webkit-scrollbar-thumb,
+.log-info-item::-webkit-scrollbar-thumb,
+.log-list-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.info-display::-webkit-scrollbar-thumb:hover,
+.log-info-item::-webkit-scrollbar-thumb:hover,
+.log-list-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

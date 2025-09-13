@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jdk.jshell.spi.ExecutionControl;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -24,15 +25,18 @@ public class NetFilter extends HttpFilter {
         // 设置请求的编码格式
         request.setCharacterEncoding("UTF-8");
         // 获取客户端 IP 地址
-        String ip = request.getRemoteAddr();
-        System.out.println("本次请求ip = " + ip);
+        String IP = request.getRemoteAddr();
+//        String UA = request.getHeader("User-Agent");
+        System.out.println("本次请求ip = " + IP);
         try{
-            if(!ip_accessible(ip)){
+            if(!ip_accessible(IP)){
                 request.getRequestDispatcher("pages/login/refuse.jsp").forward(request, response);//加不加/在前面都可以，不像是重定向，必须加
                 return;
             }
         } catch (SQLException e){
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
+            System.err.println("NetFilter中出现sql异常");
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
         // 如果 IP 不在黑名单中，继续处理请求

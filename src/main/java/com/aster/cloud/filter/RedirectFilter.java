@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-@WebFilter(filterName = "RedirectFilter")
+@WebFilter(filterName = "RedirectFilter")//不让直接访问.jsp文件
 public class RedirectFilter extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

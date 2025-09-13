@@ -95,6 +95,5 @@
         </div>
     </div>
     <script src="${pageContext.request.contextPath}/js/home.js"></script>
-
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.aster.cloud.servlet;
 
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.FileManager;
+import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -59,6 +60,7 @@ public class DeleteUserServlet extends HttpServlet {
      * 执行数据库删除操作
      */
     private boolean deleteUser(HttpServletRequest request, String userName) {
+        if(!UserManager.isUserExists(userName))return false;
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         try {

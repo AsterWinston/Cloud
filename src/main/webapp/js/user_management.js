@@ -1,33 +1,113 @@
 document.addEventListener("DOMContentLoaded", function() {
     const contextPath = document.querySelector("meta[name='contextPath']").content;
 
-    // 绑定所有删除按钮
+    // ===================== 删除用户 =====================
     document.querySelectorAll(".delete-user-btn").forEach(btn => {
         btn.addEventListener("click", function() {
             const userName = this.closest(".user-item").querySelector(".user-name-text").textContent;
-
             if (confirm(`确定要删除用户 ${userName} 吗？`)) {
                 const xhr = new XMLHttpRequest();
-                xhr.open("POST", `${contextPath}/deleteUser`, true);
+                xhr.open("POST", contextPath + "/deleteUser", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         alert(response.message);
                         if (response.status === "success") {
-                            window.location.reload(); // 删除成功就刷新页面
+                            window.location.reload();
                         }
                     } else {
                         alert("请求失败，请稍后再试");
                     }
                 };
-
-                xhr.send(`user_name=${encodeURIComponent(userName)}`);
+                xhr.send("user_name=" + encodeURIComponent(userName));
             }
         });
     });
+
+    // ===================== 重设密码 =====================
+    document.querySelectorAll(".reset-pwd-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const userName = this.closest(".user-item").querySelector(".user-name-text").textContent;
+            let newPwd = prompt(`请输入用户 ${userName} 的新密码：`);
+            if (newPwd && newPwd.trim() !== "") {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", contextPath + "/resetUserPassword", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        alert(response.message);
+                        if (response.success) {
+                            window.location.reload();
+                        }
+                    } else {
+                        alert("请求失败，请稍后再试");
+                    }
+                };
+                xhr.send("user_name=" + encodeURIComponent(userName) + "&user_new_password=" + encodeURIComponent(newPwd));
+            }
+        });
+    });
+
+    // ===================== 重设容量 =====================
+    document.querySelectorAll(".reset-limit-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const userName = this.closest(".user-item").querySelector(".user-name-text").textContent;
+            let newLimit = prompt(`请输入用户 ${userName} 的新限制容量 (单位：MB)：`);
+            if (newLimit && newLimit.trim() !== "") {
+                if (isNaN(newLimit) || parseInt(newLimit) < 0) {
+                    alert("请输入一个有效的非负整数容量值！");
+                    return;
+                }
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", contextPath + "/resetLimitVolume", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        alert(response.message);
+                        if (response.success) {
+                            window.location.reload();
+                        }
+                    } else {
+                        alert("请求失败，请稍后再试");
+                    }
+                };
+                xhr.send("user_name=" + encodeURIComponent(userName) + "&user_new_limit_volume=" + encodeURIComponent(newLimit));
+            }
+        });
+    });
+
+    // ===================== 查询密码 =====================
+    const queryBtn = document.getElementById("queryPasswordBtn");
+    if (queryBtn) {
+        queryBtn.addEventListener("click", function() {
+            const userName = prompt("请输入要查询的用户名：");
+            if (!userName) return;
+            fetch(contextPath + "/queryUserPassword", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                },
+                body: "user_name=" + encodeURIComponent(userName)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("用户 " + userName + " 的密码是：" + data.password);
+                } else {
+                    alert("查询失败: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("请求出错:", error);
+                alert("请求出错，请检查网络或后端日志");
+            });
+        });
+    }
 });
+
 
 document.addEventListener("DOMContentLoaded", function() {
     const contextPath = document.querySelector("meta[name='contextPath']").content;

@@ -104,7 +104,7 @@ public class SystemInitListener implements ServletContextListener {
 
             //初始化表ip_black_list
             sql = "create table if not exists ip_black_list(\n" +
-                    "\tip varchar(39) primary key\n" +
+                    "\tip varchar(43) primary key\n" +
                     ");";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
@@ -115,7 +115,7 @@ public class SystemInitListener implements ServletContextListener {
                     "   id INT AUTO_INCREMENT PRIMARY KEY,   \n" +
                     "   name VARCHAR(64),                 \n" +
                     "   login_time DATETIME,              \n" +
-                    "   login_ip VARCHAR(39),          \n" +
+                    "   login_ip VARCHAR(43),          \n" +
                     "   FOREIGN KEY (name) REFERENCES user(name)    \n" +
                     ");";
             preparedStatement = conn.prepareStatement(sql);
