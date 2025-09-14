@@ -69,7 +69,14 @@ public class NetFilter extends HttpFilter {
         } catch (SQLException e){
             System.err.println("NetFilter中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return ip_accessible(IP);
+            } catch (SQLException ex){
+                System.err.println("NetFilter中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

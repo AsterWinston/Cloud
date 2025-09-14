@@ -54,7 +54,14 @@ public class QueryUserPasswordServlet extends HttpServlet {
         } catch (SQLException e) {
             System.err.println("QueryUserPasswordServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return queryUserPassword(userName);
+            } catch (SQLException ex){
+                System.err.println("QueryUserPasswordServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

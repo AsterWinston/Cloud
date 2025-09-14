@@ -244,7 +244,16 @@ public class FileManager {
                 throw new RuntimeException("用户目录不存在");
             }
         } catch (SQLException e) {
-            throw new RuntimeException("数据库操作错误：" + e.getMessage());
+            System.err.println("FileManager中出现sql异常");
+            e.printStackTrace();
+            try {
+                conn.rollback();
+                return getSizeNow(request);
+            } catch (SQLException ex) {
+                System.err.println("FileManager中rollback异常");
+                throw new RuntimeException(ex);
+            }
+
         } finally {
             DBManager.closeConnection(conn);
             try { if (rs != null) rs.close(); } catch (SQLException e) {}
@@ -273,7 +282,16 @@ public class FileManager {
                 throw new RuntimeException("未找到用户存储限制");
             }
         } catch (SQLException e) {
-            throw new RuntimeException("数据库操作错误：" + e.getMessage());
+            System.err.println("FileManager中出现sql异常");
+            e.printStackTrace();
+            try {
+                conn.rollback();
+                return getLimitSize(request);
+            } catch (SQLException ex){
+                System.err.println("FileManager中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
             try { if (rs != null) rs.close(); } catch (SQLException e) {}

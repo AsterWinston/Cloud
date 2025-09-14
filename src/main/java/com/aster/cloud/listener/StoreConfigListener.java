@@ -19,7 +19,7 @@ public class StoreConfigListener implements ServletContextListener {
             // 通过类加载器加载配置文件
             inputStream = DBManager.class.getClassLoader().getResourceAsStream("conf/store.properties");
             if (inputStream == null) {
-                System.err.println(("配置文件 'store.properties' 未找到"));
+                System.err.println(("配置文件'store.properties'未找到"));
                 throw new RuntimeException();
             }
 
@@ -30,7 +30,7 @@ public class StoreConfigListener implements ServletContextListener {
             ServletContext sc = sce.getServletContext();
             // 将配置属性存储到 ServletContext
             sc.setAttribute("file_store_path", properties.getProperty("file_store_path"));
-            System.out.println(("文件存储位置已加载并设置到 ServletContext"));
+            System.out.println(("文件存储位置已加载并设置到ServletContext"));
 
         } catch (IOException e) {
             System.err.println(("StoreConfigListener中加载配置文件失败"));

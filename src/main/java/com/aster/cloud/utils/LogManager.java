@@ -25,7 +25,14 @@ public class LogManager {
         } catch (SQLException e){
             System.err.println("LoginFilter中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                loginLogInsert(name, loginTime, ip);
+            } catch (SQLException ex){
+                System.err.println("LogManager中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -41,7 +48,14 @@ public class LogManager {
         } catch (SQLException e){
             System.err.println("LogManager中出现了sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                clearLog();
+            } catch (SQLException ex){
+                System.err.println("LogManager中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -59,7 +73,14 @@ public class LogManager {
         } catch(SQLException e){
             System.err.println("LogManager中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                deleteLogById(id);
+            } catch (SQLException ex){
+                System.err.println("LogManager中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

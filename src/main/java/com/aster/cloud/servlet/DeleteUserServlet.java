@@ -91,7 +91,14 @@ public class DeleteUserServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("DeleteUserServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return false;
+            } catch (SQLException ex){
+                System.err.println("DeleteUserServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

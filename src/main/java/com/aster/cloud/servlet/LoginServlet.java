@@ -63,7 +63,13 @@ public class LoginServlet extends HttpServlet {
                 request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
                 System.err.println("LoginServlet出现sql异常");
                 e.printStackTrace();
-                throw new RuntimeException(e);
+                try {
+                    conn.rollback();
+                } catch (SQLException ex){
+                    System.err.println("LoginServlet中出现rollback异常");
+                    e.printStackTrace();
+                    throw new RuntimeException(ex);
+                }
             } finally {
                 // 关闭数据库连接等资源
                 DBManager.closeConnection(conn);
@@ -112,7 +118,14 @@ public class LoginServlet extends HttpServlet {
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
             System.err.println("LoginServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return_and_store_login_token(request, response);
+            } catch (SQLException ex){
+                System.err.println("LoginServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -134,7 +147,14 @@ public class LoginServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("LoginServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return login_token_is_repetitive(login_token);
+            } catch (SQLException ex){
+                System.err.println("LoginServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

@@ -26,14 +26,12 @@ public class BackendServlet extends HttpServlet {
     public void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         System.out.println("经过BackendServlet的请求 = " + request.getRequestURI());
-        // 获取用户信息
 
         // 处理页面跳转
         String destinationPage = request.getParameter("destination_page");
         if(destinationPage == null){
             List<User> userList = getAllUsersInfo();
             Integer userCount = userList.size(); // 获取用户数量
-
             // 将 count 和 list 作为请求属性传递给页面
             request.setAttribute("user_count", userCount);
             request.setAttribute("user_list", userList);
@@ -78,7 +76,6 @@ public class BackendServlet extends HttpServlet {
             // 默认页面
             List<User> userList = getAllUsersInfo();
             Integer userCount = userList.size(); // 获取用户数量
-
             // 将 count 和 list 作为请求属性传递给页面
             request.setAttribute("user_count", userCount);
             request.setAttribute("user_list", userList);
@@ -104,7 +101,14 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e) {
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return users;
+            } catch (SQLException ex){
+                System.err.println("BackendServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -150,7 +154,14 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e) {
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return new LoginLogPageResult(0, new ArrayList<>());
+            } catch (SQLException ex){
+                System.err.println("BackendServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -174,7 +185,14 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return "";
+            } catch (SQLException ex){
+                System.err.println("BackendServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

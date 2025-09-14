@@ -56,7 +56,14 @@ public class SaveBlackListServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("SaveBlackList中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return saveIPBlackList(IPBlackList);
+            } catch (SQLException ex){
+                System.err.println("SaveBlackListServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -65,11 +72,13 @@ public class SaveBlackListServlet extends HttpServlet {
         for (String IP : IPs) {
             IP = IP.trim();
             if (IP.isEmpty()) continue; // 跳过空行
-            saveSingleIP(IP);
+            if (!saveSingleIP(IP)) {
+                return false;
+            }
         }
         return true;
     }
-    private void saveSingleIP(String IP){
+    private boolean saveSingleIP(String IP){
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         String sql;
@@ -80,15 +89,22 @@ public class SaveBlackListServlet extends HttpServlet {
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, IP);
             rs = preparedStatement.executeQuery();
-            if(rs.next())return;
+            if(rs.next())return false;
             sql = "insert into ip_black_list values (?)";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, IP);
-            preparedStatement.executeUpdate();
+            return preparedStatement.executeUpdate() == 1;
         } catch (SQLException e){
             System.err.println("SaveBlackListServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return saveSingleIP(IP);
+            } catch (SQLException ex){
+                System.err.println("SaveBlackListServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

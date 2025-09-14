@@ -43,7 +43,14 @@ public class LogoutServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("Logout中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                deleteLoginToken(userName);
+            } catch (SQLException ex){
+                System.err.println("LogoutServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

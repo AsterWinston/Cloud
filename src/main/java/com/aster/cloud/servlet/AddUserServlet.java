@@ -64,11 +64,17 @@ public class AddUserServlet extends HttpServlet {
             } else {
                 return false;
             }
-
         } catch (SQLException e){
             System.err.println("AddUserServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return false;
+            } catch (SQLException ex) {
+                System.err.println("AddUserServlet中rollback失败");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

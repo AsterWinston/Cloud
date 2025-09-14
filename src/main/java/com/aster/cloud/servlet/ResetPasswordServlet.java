@@ -33,16 +33,16 @@ public class ResetPasswordServlet extends HttpServlet {
         }
 
     }
-    private boolean resetPassword(String username, String old_password, String new_password) {
-        if(new_password.length() > 128) return false;
+    private boolean resetPassword(String userName, String oldPassword, String newPassword) {
+        if(newPassword.length() > 128) return false;
         Connection conn = null;
         try{
             PreparedStatement preparedStatement = null;
             String sql = "select * from user where name = ? and password = ?";
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, old_password);
+            preparedStatement.setString(1, userName);
+            preparedStatement.setString(2, oldPassword);
             ResultSet rs = preparedStatement.executeQuery();
             if(!rs.next()){
                 System.err.println("验证原账号密码失败");
@@ -50,19 +50,26 @@ public class ResetPasswordServlet extends HttpServlet {
             }
             sql = "update user set password = ? where name = ?";
             preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, new_password);
-            preparedStatement.setString(2, username);
+            preparedStatement.setString(1, newPassword);
+            preparedStatement.setString(2, userName);
             int count = preparedStatement.executeUpdate();
             if(count == 0){
-                System.err.println("更新用户"+ username +"的密码失败");
+                System.err.println("更新用户"+ userName +"的密码失败");
                 return false;
             }
-            System.out.println("更新用户" + username + "的密码成功");
+            System.out.println("更新用户" + userName + "的密码成功");
             return true;
         } catch (SQLException e){
             System.err.println("ResetPasswordServlet中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return resetPassword(userName, oldPassword, newPassword);
+            } catch (SQLException ex){
+                System.err.println("ResetPasswordServlet中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

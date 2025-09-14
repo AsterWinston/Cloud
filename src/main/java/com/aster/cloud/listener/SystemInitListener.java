@@ -121,12 +121,17 @@ public class SystemInitListener implements ServletContextListener {
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
             System.out.println("表login_log初始化成功");
-
-
         } catch (SQLException e) {
             System.err.println("SystemInitListener中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                contextInitialized(sce);
+            } catch (SQLException ex){
+                System.err.println("SystemInitListener中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

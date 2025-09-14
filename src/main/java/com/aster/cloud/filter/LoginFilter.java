@@ -113,7 +113,14 @@ public class LoginFilter extends HttpFilter {
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
             System.err.println("LoginFilter中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                verify_login_token(request, response, chain);
+            } catch (SQLException ex){
+                System.err.println("LoginFilter中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }

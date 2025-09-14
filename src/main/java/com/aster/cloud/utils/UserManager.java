@@ -19,7 +19,14 @@ public class UserManager {
         } catch (SQLException e){
             System.err.println("UserManager中出现sql异常");
             e.printStackTrace();
-            throw new RuntimeException(e);
+            try {
+                conn.rollback();
+                return isUserExists(userName);
+            } catch (SQLException ex){
+                System.err.println("UserManager中出现rollback异常");
+                e.printStackTrace();
+                throw new RuntimeException(ex);
+            }
         } finally {
             DBManager.closeConnection(conn);
         }
