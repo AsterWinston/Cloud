@@ -1,6 +1,7 @@
 package com.aster.cloud.filter;
 
 import com.aster.cloud.utils.DBManager;
+import com.aster.cloud.utils.IPManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
@@ -42,22 +43,33 @@ public class NetFilter extends HttpFilter {
         // 如果 IP 不在黑名单中，继续处理请求
         chain.doFilter(request, response);
     }
-    private boolean ip_accessible(String ip) throws SQLException {
+    private boolean ip_accessible(String IP) throws SQLException {
         // 连接数据库并查询 IP 是否在黑名单中
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "select * from ip_black_list";
+        ResultSet rs = null;
         try {
-            PreparedStatement preparedStatement = null;
-            String sql = "SELECT ip FROM ip_black_list WHERE ip = ?";
-            ResultSet rs = null;
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, ip);
             rs = preparedStatement.executeQuery();
-            return !rs.next(); // 跳出，避免继续执行后续操作
+            while(rs.next()){
+                String blackIP = rs.getString("ip");
+                if(IPManager.isSingleIp(blackIP)){
+                    if (IPManager.equalsIp(blackIP, IP)) {
+                        return false;
+                    }
+                } else {
+                    if (IPManager.ipInCidr(IP, blackIP)){
+                        return false;
+                    }
+                }
+            }
+            return true;
         } catch (SQLException e){
             System.err.println("NetFilter中出现sql异常");
             e.printStackTrace();
-            throw e;
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

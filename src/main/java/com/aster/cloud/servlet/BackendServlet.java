@@ -39,6 +39,8 @@ public class BackendServlet extends HttpServlet {
             request.setAttribute("user_list", userList);
             request.getRequestDispatcher("pages/backend/user_management.jsp").forward(request, response);
         } else if(destinationPage.equals("access_control")){
+            String ipBlackList = getIPBlackList();
+            request.setAttribute("ip_black_list", ipBlackList);
             request.getRequestDispatcher("pages/backend/access_control.jsp").forward(request, response);
         } else if(destinationPage.equals("login_log")){
             String function = request.getParameter("function");
@@ -154,5 +156,27 @@ public class BackendServlet extends HttpServlet {
         }
 
         return new LoginLogPageResult(totalCount, loginLogList);
+    }
+    private String getIPBlackList(){
+        Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "select * from ip_black_list";
+        ResultSet rs = null;
+        StringBuilder IPBlackList = new StringBuilder();
+        try {
+            conn = DBManager.getConnection();
+            preparedStatement = conn.prepareStatement(sql);
+            rs = preparedStatement.executeQuery();
+            while(rs.next()){
+                IPBlackList.append(rs.getString("ip")).append("\n");
+            }
+            return IPBlackList.toString();
+        } catch (SQLException e){
+            System.err.println("BackendServlet中出现sql异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            DBManager.closeConnection(conn);
+        }
     }
 }

@@ -35,19 +35,17 @@
         <div class="main-content">
             <div class="content-wrapper">
                 <div class="scrollable-content">
-                    <form id="blacklistForm" method="post" action="${pageContext.request.contextPath}/backend">
+                    <form id="blacklistForm" method="post" action="${pageContext.request.contextPath}/saveBlackList">
                         <input type="hidden" name="destination_page" value="access_control">
-                        <input type="hidden" name="function" value="update_blacklist">
-
                         <div class="blacklist-section">
                             <h2>IP黑名单</h2>
-                            <textarea name="ip_blacklist" id="ipBlacklist" rows="10" cols="50" placeholder="每行填写一个IP"></textarea>
+                            <textarea name="ip_black_list" id="ipBlacklist" rows="10" cols="50" placeholder="每行填写一个IP">${ip_black_list}</textarea>
                             <p>每行填写一个IP，例如192.168.1.1</p>
                         </div>
 
                         <div class="blacklist-section">
                             <h2>UA黑名单</h2>
-                            <textarea name="ua_blacklist" id="uaBlacklist" rows="10" cols="50" placeholder="每行填写一个UA"></textarea>
+                            <textarea name="ua_black_list" id="uaBlacklist" rows="10" cols="50" placeholder="每行填写一个UA"></textarea>
                             <p>每行填写一个User-Agent，例如Mozilla/5.0（暂不支持）</p>
                         </div>
 

@@ -2,6 +2,7 @@ package com.aster.cloud.test;
 
 import com.aster.cloud.beans.FileOrDirInformation;
 import com.aster.cloud.utils.FileManager;
+import com.aster.cloud.utils.IPManager;
 import com.aster.cloud.utils.PathManager;
 
 import java.io.File;
@@ -13,21 +14,11 @@ import java.util.zip.ZipOutputStream;
 
 public class Test01 {
     public static void main(String[] args) throws IOException {
-        File file = new File("D:/cloud");
-        zipFolder(file, file.getName());
+        test01();
     }
 
-
-    private static void zipFolder(File folder, String baseName) throws IOException {
-        for (File file : folder.listFiles()) {
-            if (file.isDirectory()) {
-                zipFolder(file, baseName + "/" + file.getName());
-            } else {
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    System.out.println((baseName + "/" + file.getName()));
-                }
-            }
-        }
+    private static void test01(){
+        System.out.println(IPManager.isIPv4("111.111.111.11"));
     }
 
 }

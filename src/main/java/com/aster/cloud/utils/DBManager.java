@@ -24,7 +24,7 @@ public class DBManager {
             // 读取 db.properties 配置文件
             inputStream = DBManager.class.getClassLoader().getResourceAsStream("conf/db.properties");
             if (inputStream == null) {
-                System.out.println("DBUtiles中配置文件'db.properties'未找到");
+                System.err.println("DBUtiles中配置文件'db.properties'未找到");
                 throw new IOException();
             }
 

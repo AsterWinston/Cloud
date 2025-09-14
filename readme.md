@@ -14,13 +14,13 @@
    FOREIGN KEY (name) REFERENCES user(name)  
    );
 3. create table ip_black_list(
-   ip varchar(39) primary key
+   ip varchar(43) primary key
    );
 4. CREATE TABLE login_log (
    id INT AUTO_INCREMENT PRIMARY KEY,   
    name VARCHAR(64),                 
    login_time DATETIME,              
-   login_ip varchar(39),          
+   login_ip varchar(43),          
    FOREIGN KEY (name) REFERENCES user(name)    
    );
 5. 
