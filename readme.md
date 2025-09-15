@@ -1,5 +1,5 @@
 # MyCloud项目
-## table
+## 数据库表
 1. CREATE TABLE user (
    name VARCHAR(64) PRIMARY KEY,
    password VARCHAR(128),
@@ -23,9 +23,8 @@
    login_ip varchar(43),          
    FOREIGN KEY (name) REFERENCES user(name)    
    );
-5. 
 
-## function
+## 功能
 ### 1.login 
 1.登陆  
 2.十天免密 

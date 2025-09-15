@@ -44,10 +44,13 @@ public class ResetLimitVolumeServlet extends HttpServlet {
         String sql = "update user set limit_volume = ? where name = ?";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setInt(1, Integer.parseInt(userLimitVolume));
             preparedStatement.setString(2, userName);
-            return preparedStatement.executeUpdate() == 1;
+            int count = preparedStatement.executeUpdate();
+            conn.commit();
+            return count == 1;
         } catch (SQLException e){
             System.err.println("ResetLimitVolumeServlet中出现sql异常");
             e.printStackTrace();

@@ -7,15 +7,17 @@ import java.sql.SQLException;
 public class LogManager {
     public static void loginLogInsert(String name, String loginTime, String ip){
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
         try{
-            PreparedStatement preparedStatement = null;
-            String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, loginTime);
             preparedStatement.setString(3, ip);
             int count = preparedStatement.executeUpdate();
+            conn.commit();
             if(count == 1){
                 System.out.println("LoginFilter中记录登陆成功");
             } else{
@@ -43,8 +45,10 @@ public class LogManager {
         String sql = "truncate table login_log";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
+            conn.commit();
         } catch (SQLException e){
             System.err.println("LogManager中出现了sql异常");
             e.printStackTrace();
@@ -67,9 +71,11 @@ public class LogManager {
         String sql = "delete from login_log where id = ?";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setInt(1, Integer.parseInt(id));
             preparedStatement.executeUpdate();
+            conn.commit();
         } catch(SQLException e){
             System.err.println("LogManager中出现sql异常");
             e.printStackTrace();

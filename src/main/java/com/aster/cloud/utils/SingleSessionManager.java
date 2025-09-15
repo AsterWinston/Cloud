@@ -15,11 +15,12 @@ public class SingleSessionManager {
         //session绑定用户的根目录
         HttpSession session = request.getSession();
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "select dir_name from user where name = ?";
+        ResultSet rs = null;
         try {
-            PreparedStatement preparedStatement = null;
-            ResultSet rs = null;
             conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement("select dir_name from user where name = ?");
+            preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, (String) session.getAttribute("user_name"));
             rs = preparedStatement.executeQuery();
             if(rs.next()){
@@ -35,14 +36,7 @@ public class SingleSessionManager {
         } catch(SQLException e){
             System.err.println("SessionManager中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                bindDirectory(request);
-            } catch (SQLException ex){
-                System.err.println("SingleSessionManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

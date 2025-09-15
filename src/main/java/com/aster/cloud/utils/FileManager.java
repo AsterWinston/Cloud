@@ -193,7 +193,6 @@ public class FileManager {
                 return false; // 目录创建失败
             }
         }
-
         // 处理上传的文件
         for (Part part : request.getParts()) {
             String fileName = part.getSubmittedFileName();
@@ -219,21 +218,17 @@ public class FileManager {
         return true;
     }
 
-    /**
-     * 获取当前已使用空间(MB)
-     */
     public static long getSizeNow(HttpServletRequest request) {
+        String userName = (String) request.getSession().getAttribute("user_name");
         Connection conn = null;
         PreparedStatement pstmt = null;
+        String sql = "select dir_name from user where name = ?";
         ResultSet rs = null;
-        String userName = (String) request.getSession().getAttribute("user_name");
-
         try {
             conn = DBManager.getConnection();
-            pstmt = conn.prepareStatement("select dir_name from user where name = ?");
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, userName);
             rs = pstmt.executeQuery();
-
             if (rs.next()) {
                 String dirName = rs.getString("dir_name");
                 String basePath = (String) request.getServletContext().getAttribute("file_store_path");
@@ -246,18 +241,9 @@ public class FileManager {
         } catch (SQLException e) {
             System.err.println("FileManager中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return getSizeNow(request);
-            } catch (SQLException ex) {
-                System.err.println("FileManager中rollback异常");
-                throw new RuntimeException(ex);
-            }
-
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
-            try { if (rs != null) rs.close(); } catch (SQLException e) {}
-            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
         }
     }
 
@@ -266,16 +252,15 @@ public class FileManager {
      */
     public static long getLimitSize(HttpServletRequest request) {
         Connection conn = null;
-        PreparedStatement pstmt = null;
+        PreparedStatement preparedStatement = null;
         ResultSet rs = null;
         String userName = (String) request.getSession().getAttribute("user_name");
 
         try {
             conn = DBManager.getConnection();
-            pstmt = conn.prepareStatement("select limit_volume from user where name = ?");
-            pstmt.setString(1, userName);
-            rs = pstmt.executeQuery();
-
+            preparedStatement = conn.prepareStatement("select limit_volume from user where name = ?");
+            preparedStatement.setString(1, userName);
+            rs = preparedStatement.executeQuery();
             if (rs.next()) {
                 return rs.getLong("limit_volume");
             } else {
@@ -284,24 +269,13 @@ public class FileManager {
         } catch (SQLException e) {
             System.err.println("FileManager中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return getLimitSize(request);
-            } catch (SQLException ex){
-                System.err.println("FileManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
-            try { if (rs != null) rs.close(); } catch (SQLException e) {}
-            try { if (pstmt != null) pstmt.close(); } catch (SQLException e) {}
         }
     }
 
-    /**
-     * 计算目录总大小，单位为Byte
-     */
+
     public static long getDirectorySize(File directory) {
         if (!directory.exists() || !directory.isDirectory()) {
             throw new IllegalArgumentException("无效的目录: " + directory.getAbsolutePath());

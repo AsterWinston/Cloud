@@ -86,10 +86,11 @@ public class BackendServlet extends HttpServlet {
     private List<User> getAllUsersInfo() {
         List<User> users = new ArrayList<>();
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "SELECT name, create_date, limit_volume FROM user";
         try {
             conn = DBManager.getConnection();
-            String sql = "SELECT name, create_date, limit_volume FROM user";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement = conn.prepareStatement(sql);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 String userName = rs.getString("name");
@@ -101,14 +102,7 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e) {
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return users;
-            } catch (SQLException ex){
-                System.err.println("BackendServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -120,13 +114,13 @@ public class BackendServlet extends HttpServlet {
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         ResultSet rs = null;
-
+        String sql = null;
         try {
             conn = DBManager.getConnection();
 
             // 先查总数
-            String countSql = "SELECT COUNT(*) FROM login_log";
-            preparedStatement = conn.prepareStatement(countSql);
+            sql = "SELECT COUNT(*) FROM login_log";
+            preparedStatement = conn.prepareStatement(sql);
             rs = preparedStatement.executeQuery();
             if (rs.next()) {
                 totalCount = rs.getInt(1);
@@ -135,7 +129,7 @@ public class BackendServlet extends HttpServlet {
 
             if (pageCount >= 1 && pageCount <= maxPage) {
                 int offset = (pageCount - 1) * itemCountEveryPage;
-                String sql = "SELECT id, name, login_time, login_ip FROM login_log " +
+                sql = "SELECT id, name, login_time, login_ip FROM login_log " +
                         "ORDER BY login_time DESC LIMIT ?, ?";
                 preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setInt(1, offset);
@@ -154,14 +148,7 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e) {
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return new LoginLogPageResult(0, new ArrayList<>());
-            } catch (SQLException ex){
-                System.err.println("BackendServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }
@@ -185,14 +172,7 @@ public class BackendServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("BackendServlet中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return "";
-            } catch (SQLException ex){
-                System.err.println("BackendServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

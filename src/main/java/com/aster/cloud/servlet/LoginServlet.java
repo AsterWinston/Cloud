@@ -24,12 +24,12 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet rs = null;
+        String sql = "SELECT name, password FROM user WHERE name = ? AND password = ?";
         // 判断用户名和密码是否存在
         if (userName != null && password != null) {
             try {
-                PreparedStatement preparedStatement = null;
-                ResultSet rs = null;
-                String sql = "SELECT name, password FROM user WHERE name = ? AND password = ?";
                 conn = DBManager.getConnection();
                 preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, userName);
@@ -63,13 +63,7 @@ public class LoginServlet extends HttpServlet {
                 request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
                 System.err.println("LoginServlet出现sql异常");
                 e.printStackTrace();
-                try {
-                    conn.rollback();
-                } catch (SQLException ex){
-                    System.err.println("LoginServlet中出现rollback异常");
-                    e.printStackTrace();
-                    throw new RuntimeException(ex);
-                }
+                throw new RuntimeException(e);
             } finally {
                 // 关闭数据库连接等资源
                 DBManager.closeConnection(conn);
@@ -94,18 +88,18 @@ public class LoginServlet extends HttpServlet {
         System.out.println("返回login_token成功");
 
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sqlDelete = "delete from login_token where name = ?", sqlInsert = "insert into login_token values (?, ?, ?)";
+        HttpSession session = request.getSession();
+        int count;
         try{
-            PreparedStatement preparedStatement = null;
-            String sqlDelete = "delete from login_token where name = ?", sqlInsert = "insert into login_token values (?, ?, ?)";
-            HttpSession session = request.getSession();
-            int count;
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             //清理旧的login_token
             preparedStatement = conn.prepareStatement(sqlDelete);
             preparedStatement.setString(1, (String) request.getSession().getAttribute("user_name"));
             count = preparedStatement.executeUpdate();
             if(count != 0) System.out.println("清理了旧的token");
-
             preparedStatement = conn.prepareStatement(sqlInsert);
             preparedStatement.setString(1, (String) session.getAttribute("user_name"));
             preparedStatement.setString(2, login_token);
@@ -114,6 +108,7 @@ public class LoginServlet extends HttpServlet {
             count = preparedStatement.executeUpdate();
             if(count == 1)System.out.println("存储login_token成功");
             else System.err.println("存储login_token失败");
+            conn.commit();
         } catch (SQLException e) {
             request.getRequestDispatcher("pages/sql/error.jsp").forward(request, response);
             System.err.println("LoginServlet中出现sql异常");
@@ -132,10 +127,10 @@ public class LoginServlet extends HttpServlet {
     }
     private boolean login_token_is_repetitive(String login_token) {
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "select * from login_token where login_token = ?";
+        ResultSet rs = null;
         try{
-            PreparedStatement preparedStatement = null;
-            String sql = "select * from login_token where login_token = ?";
-            ResultSet rs = null;
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, login_token);
@@ -147,14 +142,7 @@ public class LoginServlet extends HttpServlet {
         } catch (SQLException e){
             System.err.println("LoginServlet中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return login_token_is_repetitive(login_token);
-            } catch (SQLException ex){
-                System.err.println("LoginServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

@@ -49,6 +49,7 @@ public class AddUserServlet extends HttpServlet {
         String sql = null;
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             sql = "insert into user values (?, ?, ?, ?, ?)";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
@@ -57,7 +58,9 @@ public class AddUserServlet extends HttpServlet {
             String userDirectoryName = UUIDGenerator.generateUniqueDirectoryName();
             preparedStatement.setString(4, userDirectoryName);
             preparedStatement.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-            if(preparedStatement.executeUpdate() == 1){
+            int count = preparedStatement.executeUpdate();
+            conn.commit();
+            if(count == 1){
                 System.out.println("创建用户" + userName + "成功");
                 FileManager.createDirectory(((String) request.getSession().getServletContext().getAttribute("file_store_path")).replace("\\", "/"), userDirectoryName);
                 return true;

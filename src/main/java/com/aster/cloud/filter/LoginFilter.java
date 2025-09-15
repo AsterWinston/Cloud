@@ -71,11 +71,13 @@ public class LoginFilter extends HttpFilter {
             return;
         }
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet rs = null;
+        String sql = null;
         try{
-            PreparedStatement preparedStatement = null;
-            ResultSet rs = null;
-            String sql = "SELECT name, create_date FROM login_token WHERE login_token = ?";
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
+            sql = "SELECT name, create_date FROM login_token WHERE login_token = ?";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, loginToken);
             rs = preparedStatement.executeQuery();
@@ -86,6 +88,7 @@ public class LoginFilter extends HttpFilter {
                 long createTimeTimeStamp = createTime.atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
                 long localTimeTimeStamp = LocalDateTime.now().atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
                 if(localTimeTimeStamp-createTimeTimeStamp<1000*3600*24*10){
+                    conn.commit();
                     //loginToken认证成功，session绑定信息
                     String userName = rs.getString("name");
                     SingleSessionManager.bindUserName(request, userName);
@@ -94,17 +97,21 @@ public class LoginFilter extends HttpFilter {
                     String nowTime = LocalDateTime.now().format(formatter);
                     LogManager.loginLogInsert(userName, nowTime, request.getRemoteHost());
                     System.out.println("token认证成功，设置session后，放行");
+
                     chain.doFilter(request, response);
                 }else {
+
                     sql = "delete from login_token where login_token = ?";
                     preparedStatement = conn.prepareStatement(sql);
                     preparedStatement.setString(1, loginToken);
                     int count = preparedStatement.executeUpdate();
+                    conn.commit();
                     if(count == 1) System.out.println("过期token删除成功");
                     System.out.println("token过期，重定向到啊/login");
                     response.sendRedirect(contextPath+"/login");
                 }
             }else{
+                conn.commit();
                 System.out.println("token无效，重定向到/login");
                 response.sendRedirect(contextPath+"/login");
             }

@@ -36,14 +36,17 @@ public class ResetPasswordServlet extends HttpServlet {
     private boolean resetPassword(String userName, String oldPassword, String newPassword) {
         if(newPassword.length() > 128) return false;
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = null;
+        ResultSet rs = null;
         try{
-            PreparedStatement preparedStatement = null;
-            String sql = "select * from user where name = ? and password = ?";
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
+            sql = "select * from user where name = ? and password = ?";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
             preparedStatement.setString(2, oldPassword);
-            ResultSet rs = preparedStatement.executeQuery();
+            rs = preparedStatement.executeQuery();
             if(!rs.next()){
                 System.err.println("验证原账号密码失败");
                 return false;
@@ -53,12 +56,14 @@ public class ResetPasswordServlet extends HttpServlet {
             preparedStatement.setString(1, newPassword);
             preparedStatement.setString(2, userName);
             int count = preparedStatement.executeUpdate();
+            conn.commit();
             if(count == 0){
                 System.err.println("更新用户"+ userName +"的密码失败");
                 return false;
+            } else {
+                System.out.println("更新用户" + userName + "的密码成功");
+                return true;
             }
-            System.out.println("更新用户" + userName + "的密码成功");
-            return true;
         } catch (SQLException e){
             System.err.println("ResetPasswordServlet中出现sql异常");
             e.printStackTrace();

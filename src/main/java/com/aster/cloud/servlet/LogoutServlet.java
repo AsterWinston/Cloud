@@ -28,10 +28,11 @@ public class LogoutServlet extends HttpServlet {
     }
     private void deleteLoginToken(String userName){
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql = "delete from login_token where name = ?";
         try {
-            PreparedStatement preparedStatement = null;
-            String sql = "delete from login_token where name = ?";
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
             int count = preparedStatement.executeUpdate();
@@ -40,6 +41,7 @@ public class LogoutServlet extends HttpServlet {
             } else {
                 System.out.println("LogoutServlet中删除login_token失败或无login_token");
             }
+            conn.commit();
         } catch (SQLException e){
             System.err.println("Logout中出现sql异常");
             e.printStackTrace();

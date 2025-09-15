@@ -33,14 +33,7 @@ public class UUIDGenerator {
         } catch (SQLException e) {
             System.err.println("UUIDGenerator中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return uuid_is_not_repetitive(uuid);
-            } catch (SQLException ex){
-                System.err.println("UUIDGenerator中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

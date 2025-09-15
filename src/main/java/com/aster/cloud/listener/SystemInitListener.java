@@ -25,18 +25,14 @@ public class SystemInitListener implements ServletContextListener {
             throw new RuntimeException();
         }
         Connection conn = null;
+        PreparedStatement preparedStatement = null;
+        String sql;
+        ResultSet rs = null;
         try {
-            PreparedStatement preparedStatement = null;
-            ResultSet rs = null;
-            System.out.println("正在获取数据库连接...");
             conn = DBManager.getConnection();
-            if (conn == null || conn.isClosed()) {
-                System.err.println("数据库连接失败");
-                throw new SQLException();
-            }
-            System.out.println("数据库连接成功");
-            //初始化表user
-            String sql = "CREATE TABLE IF NOT EXISTS user (" +
+            conn.setAutoCommit(false);
+
+            sql = "CREATE TABLE IF NOT EXISTS user (" +
                     "name VARCHAR(64) PRIMARY KEY," +
                     "password VARCHAR(128)," +
                     "limit_volume INT," +
@@ -46,13 +42,10 @@ public class SystemInitListener implements ServletContextListener {
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
             System.out.println("表user初始化成功");
-
-            // 查找 admin 用户
             sql = "SELECT * FROM user WHERE name = ?";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, admin_name);
             rs = preparedStatement.executeQuery();
-
             if (rs.next()) {
                 // 更新密码
                 if(admin_password.length() > 128){
@@ -91,7 +84,6 @@ public class SystemInitListener implements ServletContextListener {
                 System.out.println("管理员账户已创建");
             }
 
-            //初始化login_tokens
             sql = "CREATE TABLE if not exists login_token (\n" +
                     "    name VARCHAR(64),  \n" +
                     "    login_token CHAR(255) PRIMARY KEY,  \n" +
@@ -102,7 +94,6 @@ public class SystemInitListener implements ServletContextListener {
             preparedStatement.executeUpdate();
             System.out.println("表login_tokens初始化成功");
 
-            //初始化表ip_black_list
             sql = "create table if not exists ip_black_list(\n" +
                     "\tip varchar(43) primary key\n" +
                     ");";
@@ -110,7 +101,6 @@ public class SystemInitListener implements ServletContextListener {
             preparedStatement.executeUpdate();
             System.out.println("表ip_black_list初始化成功");
 
-            //初始化表login_log
             sql = "CREATE TABLE if not exists login_log (\n" +
                     "   id INT AUTO_INCREMENT PRIMARY KEY,   \n" +
                     "   name VARCHAR(64),                 \n" +
@@ -121,6 +111,7 @@ public class SystemInitListener implements ServletContextListener {
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
             System.out.println("表login_log初始化成功");
+            conn.commit();
         } catch (SQLException e) {
             System.err.println("SystemInitListener中出现sql异常");
             e.printStackTrace();

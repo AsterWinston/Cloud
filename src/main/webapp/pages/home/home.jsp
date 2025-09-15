@@ -48,7 +48,7 @@
                 <a href="${pageContext.request.contextPath}/resetPassword" class="sidebar-link">更改密码</a>
                 <a href="${pageContext.request.contextPath}/backend" class="sidebar-link">前往后台</a>
                 <a href="${pageContext.request.contextPath}/logout" class="sidebar-link">安全退出</a>
-                <a href="#" class="sidebar-link">关于我们</a>
+                <a href="https://github.com/AsterWinston/Cloud" class="sidebar-link">关于我们</a>
             </div>
         </div>
         <div class="main-content">

@@ -10,23 +10,17 @@ public class UserManager {
         Connection conn = null;
         PreparedStatement preparedStatement;
         String sql = "select * from user where name = ?";
+        ResultSet rs = null;
         try{
             conn = DBManager.getConnection();
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
-            ResultSet rs = preparedStatement.executeQuery();
+            rs = preparedStatement.executeQuery();
             return rs.next();
         } catch (SQLException e){
             System.err.println("UserManager中出现sql异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return isUserExists(userName);
-            } catch (SQLException ex){
-                System.err.println("UserManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
             DBManager.closeConnection(conn);
         }

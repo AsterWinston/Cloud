@@ -59,10 +59,13 @@ public class ResetUserPasswordServlet extends HttpServlet {
         String sql = "update user set password = ? where name = ?";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userNewPassword);
             preparedStatement.setString(2, userName);
-            return preparedStatement.executeUpdate() == 1;
+            int count = preparedStatement.executeUpdate();
+            conn.commit();
+            return count == 1;
         } catch (SQLException e){
             System.err.println("ResetUserPasswordServlet中出现sql异常");
             e.printStackTrace();
@@ -84,9 +87,12 @@ public class ResetUserPasswordServlet extends HttpServlet {
         String sql = "delete from login_token where name = ?";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
-            return preparedStatement.executeUpdate() == 1;
+            int count = preparedStatement.executeUpdate();
+            conn.commit();
+            return count == 1;
         } catch (SQLException e){
             System.err.println("ResetUserPasswordServlet中出现sql异常");
             e.printStackTrace();

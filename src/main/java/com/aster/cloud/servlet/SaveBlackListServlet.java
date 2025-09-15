@@ -51,8 +51,10 @@ public class SaveBlackListServlet extends HttpServlet {
         String sql = "delete from ip_black_list";
         try {
             conn = DBManager.getConnection();
+            conn.setAutoCommit(false);
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.executeUpdate();
+            conn.commit();
         } catch (SQLException e){
             System.err.println("SaveBlackList中出现sql异常");
             e.printStackTrace();
@@ -81,7 +83,7 @@ public class SaveBlackListServlet extends HttpServlet {
     private boolean saveSingleIP(String IP){
         Connection conn = null;
         PreparedStatement preparedStatement = null;
-        String sql;
+        String sql = null;
         ResultSet rs = null;
         try {
             conn = DBManager.getConnection();
@@ -90,10 +92,13 @@ public class SaveBlackListServlet extends HttpServlet {
             preparedStatement.setString(1, IP);
             rs = preparedStatement.executeQuery();
             if(rs.next())return false;
+            conn.setAutoCommit(false);
             sql = "insert into ip_black_list values (?)";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, IP);
-            return preparedStatement.executeUpdate() == 1;
+            int count = preparedStatement.executeUpdate();
+            conn.commit();
+            return count == 1;
         } catch (SQLException e){
             System.err.println("SaveBlackListServlet中出现sql异常");
             e.printStackTrace();

@@ -63,9 +63,11 @@ public class DeleteUserServlet extends HttpServlet {
         if(!UserManager.isUserExists(userName))return false;
         Connection conn = null;
         PreparedStatement preparedStatement = null;
+        String sql = null;
         try {
             conn = DBManager.getConnection();
-            String sql = "delete from login_token where name = ?";
+            conn.setAutoCommit(false);
+            sql = "delete from login_token where name = ?";
             preparedStatement = conn.prepareStatement(sql);
             preparedStatement.setString(1, userName);
             preparedStatement.executeUpdate();
@@ -84,8 +86,10 @@ public class DeleteUserServlet extends HttpServlet {
                 preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, userName);
                 preparedStatement.executeUpdate();
+                conn.commit();
                 return true;
             } else {
+                conn.commit();
                 return false;
             }
         } catch (SQLException e){

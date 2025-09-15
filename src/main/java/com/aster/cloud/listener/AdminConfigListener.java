@@ -7,8 +7,7 @@ import jakarta.servlet.annotation.WebListener;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 @WebListener
 public class AdminConfigListener implements ServletContextListener {
