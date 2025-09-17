@@ -6,7 +6,7 @@
 
     <groupId>com.aster.cloud</groupId>
     <artifactId>MyCloud</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.4</version>
     <!-- 打包类型为 war，适合 Web 应用 -->
     <packaging>war</packaging>
 

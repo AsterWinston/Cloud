@@ -41,10 +41,10 @@
         <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 
-    <!--错误页重定向，开发阶段不要使用-->
-<!--    <error-page>-->
-<!--        <location>/error</location>-->
-<!--    </error-page>-->
+<!--    错误页重定向，开发阶段不要使用-->
+    <error-page>
+        <location>/error</location>
+    </error-page>
     
     <!--配置listener执行顺序-->
     <listener>
