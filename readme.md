@@ -1,4 +1,4 @@
-# MyCloud项目
+# MyCloud
 ## 数据库表
 1. CREATE TABLE user (
    name VARCHAR(64) PRIMARY KEY,
