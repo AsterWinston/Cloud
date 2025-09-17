@@ -46,7 +46,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version> <!-- 使用最新版本 -->
+            <version>5.0.1</version>
         </dependency>
         <!--日志标准接口-->
         <dependency>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version> <!-- 版本号可根据需要选择最新稳定版 -->
+            <version>20231013</version>
         </dependency>
 
 
