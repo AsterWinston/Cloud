@@ -1,14 +1,13 @@
 package com.aster.cloud.listener;
-
 import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 @WebListener
 public class StoreConfigListener implements ServletContextListener {
 

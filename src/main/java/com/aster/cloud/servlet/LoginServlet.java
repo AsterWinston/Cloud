@@ -1,10 +1,8 @@
 package com.aster.cloud.servlet;
-
 import com.aster.cloud.utils.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

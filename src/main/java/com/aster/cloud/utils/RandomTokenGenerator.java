@@ -1,5 +1,6 @@
 package com.aster.cloud.utils;
 import java.security.SecureRandom;
+
 public class RandomTokenGenerator {
     private static final String CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom random = new SecureRandom();

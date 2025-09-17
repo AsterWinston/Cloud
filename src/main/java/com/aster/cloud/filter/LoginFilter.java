@@ -1,5 +1,4 @@
 package com.aster.cloud.filter;
-
 import com.aster.cloud.utils.HttpSessionManager;
 import com.aster.cloud.utils.SingleSessionManager;
 import com.aster.cloud.utils.DBManager;
@@ -8,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

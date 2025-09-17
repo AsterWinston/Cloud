@@ -1,5 +1,4 @@
 package com.aster.cloud.filter;
-
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.IPManager;
 import jakarta.servlet.FilterChain;
@@ -8,14 +7,12 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jdk.jshell.spi.ExecutionControl;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-//*.*.*.*
+
 @WebFilter(filterName = "NetFilter")
 public class NetFilter extends HttpFilter {
     @Override

@@ -1,6 +1,4 @@
 package com.aster.cloud.servlet;
-
-import com.aster.cloud.beans.User;
 import com.aster.cloud.utils.DBManager;
 import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.ServletException;
@@ -9,7 +7,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

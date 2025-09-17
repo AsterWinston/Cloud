@@ -1,6 +1,4 @@
 package com.aster.cloud.beans;
-
-import java.util.Arrays;
 import java.util.List;
 
 public class DirectoryInformation {

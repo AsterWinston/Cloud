@@ -1,8 +1,6 @@
 package com.aster.cloud.utils;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
