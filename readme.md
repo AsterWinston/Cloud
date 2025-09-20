@@ -1,28 +1,28 @@
 # MyCloud
 ## 数据库表
-1. CREATE TABLE user (
-   name VARCHAR(64) PRIMARY KEY,
-   password VARCHAR(128),
-   limit_volume BIGINT,
-   dir_name CHAR(32),
-   create_date DATETIME
-   );
-2. CREATE TABLE login_token (
+1. CREATE TABLE user (  
+   name VARCHAR(64) PRIMARY KEY,  
+   password VARCHAR(128),  
+   limit_volume BIGINT,  
+   dir_name CHAR(32),  
+   create_date DATETIME  
+   );  
+2. CREATE TABLE login_token (  
    name VARCHAR(64),  
    login_token CHAR(255) PRIMARY KEY,  
    create_date DATETIME,  
    FOREIGN KEY (name) REFERENCES user(name)  
-   );
-3. create table ip_black_list(
-   ip varchar(43) primary key
-   );
-4. CREATE TABLE login_log (
+   );  
+3. create table ip_black_list(  
+   ip varchar(43) primary key  
+   );  
+4. CREATE TABLE login_log (  
    id BIGINT AUTO_INCREMENT PRIMARY KEY,   
    name VARCHAR(64),                 
    login_time DATETIME,              
    login_ip varchar(43),          
    FOREIGN KEY (name) REFERENCES user(name)    
-   );
+   );  
 
 ## 功能
 ### 1.login 
