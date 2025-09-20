@@ -1,16 +1,16 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.mapper.UserMapper;
+import com.aster.cloud.utils.SqlSessionUtils;
 import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 @WebServlet("/resetLimitVolume")
 public class ResetLimitVolumeServlet extends HttpServlet {
@@ -33,35 +33,24 @@ public class ResetLimitVolumeServlet extends HttpServlet {
 
         response.getWriter().write(result.toString());
     }
-    private boolean resetLimitVolume(String userName, String userLimitVolume){
-        if(!UserManager.isUserExists(userName))return false;
-        if(Integer.parseInt(userLimitVolume) < 0)return false;
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "update user set limit_volume = ? where name = ?";
+    private boolean resetLimitVolume(String userName, String userLimitVolume) {
+        if (!UserManager.isUserExists(userName)) return false;
+        if (Integer.parseInt(userLimitVolume) < 0) return false;
+
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setInt(1, Integer.parseInt(userLimitVolume));
-            preparedStatement.setString(2, userName);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            int count = userMapper.updateLimitVolumeByName(Long.parseLong(userLimitVolume), userName);
+            sqlSession.commit();
             return count == 1;
-        } catch (SQLException e){
-            System.err.println("ResetLimitVolumeServlet中出现sql异常");
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("ResetLimitVolumeServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return resetLimitVolume(userName, userLimitVolume);
-            } catch (SQLException ex){
-                System.err.println("ResetLimitVolumeServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
-
 }

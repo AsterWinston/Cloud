@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aster.cloud.mapper.LoginTokenMapper">
+  <resultMap id="LoginTokenResultMap" type="com.aster.cloud.beans.LoginToken">
+    <!-- 主键映射：column 是数据库字段名，property 是实体类属性名 -->
+    <id column="login_token" property="loginToken"/>
+    <result column="name" property="name"/>
+    <result column="create_date" property="createDate"/>
+  </resultMap>
+
+  <select id="selectByLoginToken" resultMap="LoginTokenResultMap">
+    SELECT * FROM login_token WHERE login_token = #{loginToken}
+  </select>
+
+  <delete id="deleteByLoginToken">
+    delete from login_token where login_token = #{loginToken}
+  </delete>
+
+  <delete id="deleteByName">
+    delete from login_token where name = #{name}
+  </delete>
+
+  <insert id="insertOne" parameterType="com.aster.cloud.beans.LoginToken">
+    insert into login_token values (#{name}, #{loginToken}, #{createDate})
+  </insert>
+
+  <delete id="deleteByCreateDate">
+    delete from login_token where create_date &lt; #{createDate}
+  </delete>
+</mapper>

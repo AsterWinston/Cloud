@@ -1,56 +1,63 @@
 package com.aster.cloud.beans;
 
+import java.util.Date;
+
 public class User {
-    String userName;
-    String createDate;
-    String limitVolume;
+    private String name;
+    private String password;
+    private long limitVolume;
+    private String dirName;
+    private Date createDate;
+
 
     public User() {
     }
 
-    public User(String userName, String createDate, String limitVolume) {
-        this.userName = userName;
-        this.createDate = createDate;
+    public User(String name, String password, long limitVolume, String dirName, Date createDate) {
+        this.name = name;
+        this.password = password;
         this.limitVolume = limitVolume;
-    }
-
-    /**
-     * 获取
-     * @return userName
-     */
-    public String getUserName() {
-        return userName;
-    }
-
-    /**
-     * 设置
-     * @param userName
-     */
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    /**
-     * 获取
-     * @return createDate
-     */
-    public String getCreateDate() {
-        return createDate;
-    }
-
-    /**
-     * 设置
-     * @param createDate
-     */
-    public void setCreateDate(String createDate) {
+        this.dirName = dirName;
         this.createDate = createDate;
+    }
+
+    /**
+     * 获取
+     * @return name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * 设置
+     * @param name
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * 获取
+     * @return password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * 设置
+     * @param password
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**
      * 获取
      * @return limitVolume
      */
-    public String getLimitVolume() {
+    public long getLimitVolume() {
         return limitVolume;
     }
 
@@ -58,11 +65,43 @@ public class User {
      * 设置
      * @param limitVolume
      */
-    public void setLimitVolume(String limitVolume) {
+    public void setLimitVolume(long limitVolume) {
         this.limitVolume = limitVolume;
     }
 
+    /**
+     * 获取
+     * @return dirName
+     */
+    public String getDirName() {
+        return dirName;
+    }
+
+    /**
+     * 设置
+     * @param dirName
+     */
+    public void setDirName(String dirName) {
+        this.dirName = dirName;
+    }
+
+    /**
+     * 获取
+     * @return createDate
+     */
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    /**
+     * 设置
+     * @param createDate
+     */
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
     public String toString() {
-        return "User{userName = " + userName + ", createDate = " + createDate + ", limitVolume = " + limitVolume + "}";
+        return "User{name = " + name + ", password = " + password + ", limitVolume = " + limitVolume + ", dirName = " + dirName + ", createDate = " + createDate + "}";
     }
 }

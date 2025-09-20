@@ -1,17 +1,17 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.beans.IP;
+import com.aster.cloud.mapper.IpBlackListMapper;
 import com.aster.cloud.utils.IPManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @WebServlet("/saveBlackList")
 public class SaveBlackListServlet extends HttpServlet {
@@ -40,32 +40,25 @@ public class SaveBlackListServlet extends HttpServlet {
         }
     }
     private boolean saveIPBlackList(String IPBlackList) {
-        if (IPBlackList == null || IPBlackList.isEmpty() || !isAllIPLegal(IPBlackList)) {
-            return false; // 空字符串直接返回
+        if (IPBlackList == null || !isAllIPLegal(IPBlackList)) {
+            return false;
         }
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "delete from ip_black_list";
+
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-            conn.commit();
-        } catch (SQLException e){
-            System.err.println("SaveBlackList中出现sql异常");
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            IpBlackListMapper ipBlackListMapper = sqlSession.getMapper(IpBlackListMapper.class);
+            ipBlackListMapper.deleteAll();
+            sqlSession.commit();
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("SaveBlackList中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return saveIPBlackList(IPBlackList);
-            } catch (SQLException ex){
-                System.err.println("SaveBlackListServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
+
         // 按行拆分（兼容 \n 和 \r\n）
         String[] IPs = IPBlackList.split("\\r?\\n");
         for (String IP : IPs) {
@@ -78,37 +71,26 @@ public class SaveBlackListServlet extends HttpServlet {
         return true;
     }
     private boolean saveSingleIP(String IP){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = null;
-        ResultSet rs = null;
+
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            sql = "select * from ip_black_list where ip = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, IP);
-            rs = preparedStatement.executeQuery();
-            if(rs.next())return false;
-            conn.setAutoCommit(false);
-            sql = "insert into ip_black_list values (?)";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, IP);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
-            return count == 1;
-        } catch (SQLException e){
-            System.err.println("SaveBlackListServlet中出现sql异常");
-            e.printStackTrace();
-            try {
-                conn.rollback();
-                return saveSingleIP(IP);
-            } catch (SQLException ex){
-                System.err.println("SaveBlackListServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            IpBlackListMapper ipBlackListMapper = sqlSession.getMapper(IpBlackListMapper.class);
+            IP ip = ipBlackListMapper.selectByIP(IP);
+            if(ip != null){
+                sqlSession.commit();
+                return false;
             }
+            int count = ipBlackListMapper.insertOne(new IP(IP));
+            sqlSession.commit();
+            return count == 1;
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("SaveBlacklistServlet中出现异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
     private boolean isAllIPLegal(String IPBlackList){

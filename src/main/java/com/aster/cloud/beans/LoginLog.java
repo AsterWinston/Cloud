@@ -1,16 +1,18 @@
 package com.aster.cloud.beans;
 
+import java.util.Date;
+
 public class LoginLog {
-    private String id;
+    private long id;
     private String name;
-    private String loginTime;
+    private Date loginTime;
     private String loginIP;
+
 
     public LoginLog() {
     }
 
-    public LoginLog(String id, String name, String loginTime, String loginIP) {
-        this.id = id;
+    public LoginLog(String name, Date loginTime, String loginIP) {
         this.name = name;
         this.loginTime = loginTime;
         this.loginIP = loginIP;
@@ -20,7 +22,7 @@ public class LoginLog {
      * 获取
      * @return id
      */
-    public String getId() {
+    public long getId() {
         return id;
     }
 
@@ -28,7 +30,7 @@ public class LoginLog {
      * 设置
      * @param id
      */
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -52,7 +54,7 @@ public class LoginLog {
      * 获取
      * @return loginTime
      */
-    public String getLoginTime() {
+    public Date getLoginTime() {
         return loginTime;
     }
 
@@ -60,7 +62,7 @@ public class LoginLog {
      * 设置
      * @param loginTime
      */
-    public void setLoginTime(String loginTime) {
+    public void setLoginTime(Date loginTime) {
         this.loginTime = loginTime;
     }
 

@@ -1,9 +1,10 @@
 package com.aster.cloud.listener;
-import com.aster.cloud.utils.DBManager;
+
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
+import org.apache.ibatis.io.Resources;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -16,7 +17,7 @@ public class StoreConfigListener implements ServletContextListener {
         InputStream inputStream = null;
         try {
             // 通过类加载器加载配置文件
-            inputStream = DBManager.class.getClassLoader().getResourceAsStream("conf/store.properties");
+            inputStream = Resources.getResourceAsStream("conf/store.properties");
             if (inputStream == null) {
                 System.err.println(("配置文件'store.properties'未找到"));
                 throw new RuntimeException();

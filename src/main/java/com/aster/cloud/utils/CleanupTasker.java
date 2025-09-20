@@ -1,10 +1,12 @@
 package com.aster.cloud.utils;
+
+import com.aster.cloud.mapper.LoginLogMapper;
+import com.aster.cloud.mapper.LoginTokenMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -13,43 +15,28 @@ import java.util.concurrent.TimeUnit;
 
 public class CleanupTasker {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-
-
+    private static final Logger log = LoggerFactory.getLogger(CleanupTasker.class);
     // 定时任务：清理过期内容
     public static void startLoginTokenCleanupTask() {
         Runnable cleanupTask = new Runnable() {
             @Override
             public void run() {
-                Connection conn = null;
-                String sql = "delete from login_token where create_date < ?";
-                PreparedStatement preparedStatement = null;
-                long currentTimeMillis = System.currentTimeMillis();
-                long tenDaysAgoMillis = currentTimeMillis - TimeUnit.DAYS.toMillis(10);
-                Date tenDaysAgo = new Date(tenDaysAgoMillis);
-                // 将日期格式化为字符串，符合数据库要求的格式
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String tenDaysAgoFormatted = sdf.format(tenDaysAgo);
+
+                SqlSession sqlSession = null;
                 try {
-                    conn = DBManager.getConnection();
-                    conn.setAutoCommit(false);
-                    preparedStatement = conn.prepareStatement(sql);
-                    preparedStatement.setString(1, tenDaysAgoFormatted);
-                    int count = preparedStatement.executeUpdate();
+                    sqlSession = SqlSessionUtils.getSqlSession(false);
+                    Date timeDaysAgo = new Date((new Date().getTime() - 10L * 24 * 60 * 60 * 1000));
+                    LoginTokenMapper loginTokenMapper = sqlSession.getMapper(LoginTokenMapper.class);
+                    int count = loginTokenMapper.deleteByCreateDate(timeDaysAgo);
                     System.out.println(("清理了" + count + "个过期login token(s)"));
-                    conn.commit();
-                } catch (SQLException e) {
-                    System.err.println("CleanupTasker中出现sql异常");
+                    sqlSession.commit();
+                } catch (Exception e){
+                    sqlSession.rollback();
+                    System.err.println("CleanupTasker中出现异常");
                     e.printStackTrace();
-                    try {
-                        conn.rollback();
-                        startLoginTokenCleanupTask();
-                    } catch (SQLException ex){
-                        System.err.println("CleanupTasker中出现rollback异常");
-                        e.printStackTrace();
-                        throw new RuntimeException(ex);
-                    }
+                    throw new RuntimeException(e);
                 } finally {
-                    DBManager.closeConnection(conn);
+                    SqlSessionUtils.closeSqlSession();
                 }
             }
         };
@@ -60,30 +47,19 @@ public class CleanupTasker {
         Runnable cleanupTask = new Runnable() {
             @Override
             public void run() {
-                Connection conn = null;
-                String sql = "delete from login_log";
-                PreparedStatement preparedStatement = null;
-
+                SqlSession sqlSession = null;
                 try {
-                    conn = DBManager.getConnection();
-                    conn.setAutoCommit(false);
-                    preparedStatement = conn.prepareStatement(sql);
-                    int count = preparedStatement.executeUpdate();
-                    System.out.println(("清理了" + count + "个login log(s)"));
-                    conn.commit();
-                } catch (SQLException e) {
-                    System.err.println("CleanupTasker中出现sql异常");
+                    sqlSession = SqlSessionUtils.getSqlSession(false);
+                    LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+                    loginLogMapper.truncate();
+                    sqlSession.commit();
+                } catch (Exception e){
+                    sqlSession.rollback();
+                    System.err.println("CleanupTasker中出现异常");
                     e.printStackTrace();
-                    try {
-                        conn.rollback();
-                        startLoginTokenCleanupTask();
-                    } catch (SQLException ex){
-                        System.err.println("CleanupTasker中出现rollback异常");
-                        e.printStackTrace();
-                        throw new RuntimeException(ex);
-                    }
+                    throw new RuntimeException(e);
                 } finally {
-                    DBManager.closeConnection(conn);
+                    SqlSessionUtils.closeSqlSession();
                 }
             }
         };

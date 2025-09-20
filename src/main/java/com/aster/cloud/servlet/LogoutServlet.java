@@ -1,12 +1,12 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.mapper.LoginTokenMapper;
 import com.aster.cloud.utils.HttpSessionManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import org.apache.ibatis.session.SqlSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 @WebServlet("/logout")
 public class LogoutServlet extends HttpServlet {
@@ -24,34 +24,19 @@ public class LogoutServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/login");
     }
     private void deleteLoginToken(String userName){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "delete from login_token where name = ?";
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            int count = preparedStatement.executeUpdate();
-            if(count == 1){
-                System.out.println("LogoutServlet中删除login_token成功");
-            } else {
-                System.out.println("LogoutServlet中删除login_token失败或无login_token");
-            }
-            conn.commit();
-        } catch (SQLException e){
-            System.err.println("Logout中出现sql异常");
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            LoginTokenMapper loginTokenMapper = sqlSession.getMapper(LoginTokenMapper.class);
+            loginTokenMapper.deleteByName(userName);
+            sqlSession.commit();
+        } catch (Exception e){
+            sqlSession.rollback();
+            System.err.println("LogoutServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                deleteLoginToken(userName);
-            } catch (SQLException ex){
-                System.err.println("LogoutServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
     private void deleteCookieLoginToken(HttpServletResponse response){

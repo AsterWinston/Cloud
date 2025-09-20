@@ -1,19 +1,21 @@
 package com.aster.cloud.servlet;
+
+import com.aster.cloud.beans.IP;
 import com.aster.cloud.beans.LoginLog;
 import com.aster.cloud.beans.LoginLogPageResult;
 import com.aster.cloud.beans.User;
-import com.aster.cloud.utils.DBManager;
+import com.aster.cloud.mapper.IpBlackListMapper;
+import com.aster.cloud.mapper.LoginLogMapper;
+import com.aster.cloud.mapper.UserMapper;
 import com.aster.cloud.utils.LogManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +56,7 @@ public class BackendServlet extends HttpServlet {
                 request.setAttribute("item_count_every_page", request.getParameter("item_count_every_page"));
                 request.setAttribute("page_count", request.getParameter("page_count"));
             } else if(function.equals("delete_log")) {
-                LogManager.deleteLogById(request.getParameter("log_id"));
+                LogManager.deleteLogById(Long.parseLong(request.getParameter("log_id")));
                 request.setAttribute("item_count_every_page", request.getParameter("item_count_every_page"));
                 request.setAttribute("page_count", request.getParameter("page_count"));
             } else {
@@ -82,96 +84,36 @@ public class BackendServlet extends HttpServlet {
 
     private List<User> getAllUsersInfo() {
         List<User> users = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "SELECT name, create_date, limit_volume FROM user";
-        try {
-            conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()) {
-                String userName = rs.getString("name");
-                String createDate = rs.getString("create_date");
-                String limitVolume = rs.getString("limit_volume");
-                User user = new User(userName, createDate, limitVolume);
-                users.add(user);
-            }
-        } catch (SQLException e) {
-            System.err.println("BackendServlet中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
-        }
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        users = userMapper.selectAll();
+        SqlSessionUtils.closeSqlSession();
         return users;
     }
     private LoginLogPageResult getLoginLogs(int itemCountEveryPage, int pageCount) {
         List<LoginLog> loginLogList = new ArrayList<>();
         int totalCount = 0;
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet rs = null;
-        String sql = null;
-        try {
-            conn = DBManager.getConnection();
 
-            // 先查总数
-            sql = "SELECT COUNT(*) FROM login_log";
-            preparedStatement = conn.prepareStatement(sql);
-            rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                totalCount = rs.getInt(1);
-            }
-            int maxPage = (int) Math.ceil((double) totalCount / itemCountEveryPage);
-
-            if (pageCount >= 1 && pageCount <= maxPage) {
-                int offset = (pageCount - 1) * itemCountEveryPage;
-                sql = "SELECT id, name, login_time, login_ip FROM login_log " +
-                        "ORDER BY login_time DESC LIMIT ?, ?";
-                preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setInt(1, offset);
-                preparedStatement.setInt(2, itemCountEveryPage);
-                rs = preparedStatement.executeQuery();
-
-                while (rs.next()) {
-                    LoginLog log = new LoginLog();
-                    log.setId(String.valueOf(rs.getInt("id")));
-                    log.setName(rs.getString("name"));
-                    log.setLoginTime(rs.getString("login_time"));
-                    log.setLoginIP(rs.getString("login_ip"));
-                    loginLogList.add(log);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("BackendServlet中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+        totalCount = loginLogMapper.selectCountOfLoginLog();
+        int maxPage = (int) Math.ceil((double) totalCount / itemCountEveryPage);
+        if (pageCount >= 1 && pageCount <= maxPage) {
+            int offset = (pageCount - 1) * itemCountEveryPage;
+            loginLogList = loginLogMapper.selectLoginLogByPage(offset, itemCountEveryPage);
         }
-
+        SqlSessionUtils.closeSqlSession();
         return new LoginLogPageResult(totalCount, loginLogList);
     }
     private String getIPBlackList(){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "select * from ip_black_list";
-        ResultSet rs = null;
         StringBuilder IPBlackList = new StringBuilder();
-        try {
-            conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                IPBlackList.append(rs.getString("ip")).append("\n");
-            }
-            return IPBlackList.toString();
-        } catch (SQLException e){
-            System.err.println("BackendServlet中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        IpBlackListMapper ipBlackListMapper = sqlSession.getMapper(IpBlackListMapper.class);
+        List<IP> ipList = ipBlackListMapper.selectAll();
+        SqlSessionUtils.closeSqlSession();
+        for (IP ip: ipList){
+            IPBlackList.append(ip.getIP()).append("\n");
         }
+        return IPBlackList.toString();
     }
 }

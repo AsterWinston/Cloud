@@ -1,15 +1,16 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.UserMapper;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 
 @WebServlet("/resetPassword")
 public class ResetPasswordServlet extends HttpServlet {
@@ -33,49 +34,27 @@ public class ResetPasswordServlet extends HttpServlet {
     }
     private boolean resetPassword(String userName, String oldPassword, String newPassword) {
         if(newPassword.length() > 128) return false;
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = null;
-        ResultSet rs = null;
-        try{
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            sql = "select * from user where name = ? and password = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, oldPassword);
-            rs = preparedStatement.executeQuery();
-            if(!rs.next()){
-                System.err.println("验证原账号密码失败");
-                return false;
-            }
-            sql = "update user set password = ? where name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, newPassword);
-            preparedStatement.setString(2, userName);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
-            if(count == 0){
-                System.err.println("更新用户"+ userName +"的密码失败");
-                return false;
-            } else {
-                System.out.println("更新用户" + userName + "的密码成功");
-                return true;
-            }
-        } catch (SQLException e){
-            System.err.println("ResetPasswordServlet中出现sql异常");
-            e.printStackTrace();
-            try {
-                conn.rollback();
-                return resetPassword(userName, oldPassword, newPassword);
-            } catch (SQLException ex){
-                System.err.println("ResetPasswordServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
-        } finally {
-            DBManager.closeConnection(conn);
-        }
 
+        SqlSession sqlSession = null;
+        try{
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            User user = userMapper.selectByNameAndPassword(userName, oldPassword);
+            if(user == null){
+                System.err.println("验证原账号密码失败");
+                sqlSession.commit();
+                return false;
+            }
+            int count = userMapper.updatePasswordByName(userName, newPassword);
+            sqlSession.commit();
+            return count == 1;
+        } catch (Exception e){
+            sqlSession.rollback();
+            System.err.println("ResetPasswordServlet中出现异常");
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            SqlSessionUtils.closeSqlSession();
+        }
     }
 }

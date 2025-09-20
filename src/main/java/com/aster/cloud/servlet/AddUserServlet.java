@@ -1,16 +1,17 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
-import com.aster.cloud.utils.FileManager;
-import com.aster.cloud.utils.UUIDGenerator;
-import com.aster.cloud.utils.UserManager;
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.UserMapper;
+import com.aster.cloud.utils.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @WebServlet("/addUser")
 public class AddUserServlet extends HttpServlet {
@@ -41,22 +42,16 @@ public class AddUserServlet extends HttpServlet {
         if(userName.length()>64 || userPassword.length()>128)return false;
         if(Integer.parseInt(limitVolume) <= 0)return false;
         if(UserManager.isUserExists(userName))return false;
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = null;
-        try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            sql = "insert into user values (?, ?, ?, ?, ?)";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            preparedStatement.setString(2, userPassword);
-            preparedStatement.setInt(3, Integer.parseInt(limitVolume));
+
+        SqlSession sqlSession = null;
+
+        try{
             String userDirectoryName = UUIDGenerator.generateUniqueDirectoryName();
-            preparedStatement.setString(4, userDirectoryName);
-            preparedStatement.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            User user = new User(userName, userPassword, Long.parseLong(limitVolume), userDirectoryName, new Date());
+            int count = userMapper.insertOne(user);
+            sqlSession.commit();
             if(count == 1){
                 System.out.println("创建用户" + userName + "成功");
                 FileManager.createDirectory(((String) request.getSession().getServletContext().getAttribute("file_store_path")).replace("\\", "/"), userDirectoryName);
@@ -64,19 +59,13 @@ public class AddUserServlet extends HttpServlet {
             } else {
                 return false;
             }
-        } catch (SQLException e){
-            System.err.println("AddUserServlet中出现sql异常");
+        } catch (Exception e){
+            sqlSession.rollback();
+            System.err.println("AddUserServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return false;
-            } catch (SQLException ex) {
-                System.err.println("AddUserServlet中rollback失败");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aster.cloud.mapper.LoginLogMapper">
+  <resultMap id="LoginLogResultMap" type="com.aster.cloud.beans.LoginLog">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="login_time" property="loginTime"/>
+    <result column="login_ip" property="loginIP"/>
+  </resultMap>
+  <select id="selectCountOfLoginLog">
+    select count(*) from login_log
+  </select>
+  <select id="selectLoginLogByPage" resultMap="LoginLogResultMap">
+    SELECT id, name, login_time, login_ip FROM login_log
+    ORDER BY login_time DESC LIMIT #{offset}, #{itemCountEveryPage}
+  </select>
+  <delete id="deleteByName">
+    delete from login_log where name = #{name}
+  </delete>
+  <update id="truncate">
+    truncate table login_log
+  </update>
+  <insert id="insertOne" parameterType="com.aster.cloud.beans.LoginLog">
+    insert into login_log values (null, #{name}, #{loginTime}, #{loginIP})
+  </insert>
+  <delete id="deleteByID">
+    delete from login_log where id = #{id}
+  </delete>
+</mapper>

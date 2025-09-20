@@ -3,7 +3,7 @@
 1. CREATE TABLE user (
    name VARCHAR(64) PRIMARY KEY,
    password VARCHAR(128),
-   limit_volume INT,
+   limit_volume BIGINT,
    dir_name CHAR(32),
    create_date DATETIME
    );
@@ -17,7 +17,7 @@
    ip varchar(43) primary key
    );
 4. CREATE TABLE login_log (
-   id INT AUTO_INCREMENT PRIMARY KEY,   
+   id BIGINT AUTO_INCREMENT PRIMARY KEY,   
    name VARCHAR(64),                 
    login_time DATETIME,              
    login_ip varchar(43),          

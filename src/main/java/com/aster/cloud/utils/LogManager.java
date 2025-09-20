@@ -1,93 +1,57 @@
 package com.aster.cloud.utils;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
+import com.aster.cloud.beans.LoginLog;
+import com.aster.cloud.mapper.LoginLogMapper;
+import org.apache.ibatis.session.SqlSession;
 
 public class LogManager {
-    public static void loginLogInsert(String name, String loginTime, String ip){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "insert into login_log (name, login_time, login_ip) values (?, ?, ?)";
-        try{
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, loginTime);
-            preparedStatement.setString(3, ip);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
-            if(count == 1){
-                System.out.println("LoginFilter中记录登陆成功");
-            } else{
-                System.err.println("LoginFilter中记录登陆失败");
-            }
-
-        } catch (SQLException e){
-            System.err.println("LoginFilter中出现sql异常");
+    public static void loginLogInsert(String name, java.util.Date loginTime, String ip){
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+            LoginLog loginLog = new LoginLog(name, loginTime, ip);
+            loginLogMapper.insertOne(loginLog);
+            sqlSession.commit();
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("LogManager中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                loginLogInsert(name, loginTime, ip);
-            } catch (SQLException ex){
-                System.err.println("LogManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
     public static void clearLog(){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "truncate table login_log";
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-            conn.commit();
-        } catch (SQLException e){
-            System.err.println("LogManager中出现了sql异常");
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+            loginLogMapper.truncate();
+            sqlSession.commit();
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("LogManager中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                clearLog();
-            } catch (SQLException ex){
-                System.err.println("LogManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
-
     }
-    public static void deleteLogById(String id){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "delete from login_log where id = ?";
+    public static void deleteLogById(long id){
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setInt(1, Integer.parseInt(id));
-            preparedStatement.executeUpdate();
-            conn.commit();
-        } catch(SQLException e){
-            System.err.println("LogManager中出现sql异常");
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+            loginLogMapper.deleteByID(id);
+            sqlSession.commit();
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("LogManager中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                deleteLogById(id);
-            } catch (SQLException ex){
-                System.err.println("LogManager中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
 }

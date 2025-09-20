@@ -1,17 +1,17 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.UserMapper;
+import com.aster.cloud.utils.SqlSessionUtils;
 import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @WebServlet("/queryUserPassword")
 public class QueryUserPasswordServlet extends HttpServlet {
@@ -24,7 +24,7 @@ public class QueryUserPasswordServlet extends HttpServlet {
         response.setContentType("application/json");
 
         JSONObject json = new org.json.JSONObject();
-        if (!password.isEmpty()) {
+        if (password != null) {
             json.put("success", true);
             json.put("password", password);
             json.put("message", "查询成功");
@@ -36,24 +36,15 @@ public class QueryUserPasswordServlet extends HttpServlet {
         response.getWriter().write(json.toString());
     }
     private String queryUserPassword(String userName){
-        if(!UserManager.isUserExists(userName))return "";
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "select password from user where name = ?";
-        ResultSet rs = null;
-        try {
-            conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            rs = preparedStatement.executeQuery();
-            if(rs.next()) return rs.getString("password");
-            else return "";
-        } catch (SQLException e) {
-            System.err.println("QueryUserPasswordServlet中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
+        if(!UserManager.isUserExists(userName))return null;
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User user = userMapper.selectByName(userName);
+        SqlSessionUtils.closeSqlSession();
+        if(user != null){
+            return user.getPassword();
+        } else {
+            return null;
         }
     }
 }

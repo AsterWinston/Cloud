@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aster.cloud.mapper.IpBlackListMapper">
+  <resultMap id="IpBlackListResultMap" type="com.aster.cloud.beans.IP">
+    <id column="ip" property="IP"/>
+  </resultMap>
+  <select id="selectAll" resultMap="IpBlackListResultMap">
+    select * from ip_black_list
+  </select>
+  <delete id="deleteAll">
+    delete from ip_black_list
+  </delete>
+  <select id="selectByIP" resultMap="IpBlackListResultMap">
+    select * from ip_black_list where ip = #{IP}
+  </select>
+  <insert id="insertOne" parameterType="com.aster.cloud.beans.IP">
+    insert into ip_black_list values (#{IP})
+  </insert>
+</mapper>

@@ -1,6 +1,6 @@
 package com.aster.cloud.listener;
+
 import com.aster.cloud.utils.CleanupTasker;
-import com.aster.cloud.utils.DBManager;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -17,6 +17,5 @@ public class ApplicationConfigListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         CleanupTasker.stopCleanupTasks();
-        DBManager.closeDataSource();
     }
 }

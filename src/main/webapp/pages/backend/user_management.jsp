@@ -50,7 +50,7 @@
                             <c:forEach var="user" items="${user_list}">
                                 <div class="user-item">
                                     <div class="user-name-container">
-                                        <span class="user-name-text">${user.userName}</span>
+                                        <span class="user-name-text">${user.name}</span>
                                     </div>
                                     <div class="user-info-item">
                                         <span class="user-createtime">${user.createDate}</span>

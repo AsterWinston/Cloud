@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aster.cloud.mapper.SystemMapper">
+  <update id="createTableUser">
+    CREATE TABLE if not exists user (
+    name VARCHAR(64) PRIMARY KEY,
+    password VARCHAR(128),
+    limit_volume BIGINT,
+    dir_name CHAR(32),
+    create_date DATETIME
+    );
+  </update>
+  <update id="createTableLoginToken">
+    CREATE TABLE if not exists login_token (
+    name VARCHAR(64),
+    login_token CHAR(255) PRIMARY KEY,
+    create_date DATETIME,
+    FOREIGN KEY (name) REFERENCES user(name)
+    );
+  </update>
+  <update id="createTableLoginLog">
+    CREATE TABLE if not exists login_log (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(64),
+    login_time DATETIME,
+    login_ip varchar(43),
+    FOREIGN KEY (name) REFERENCES user(name)
+    );
+  </update>
+  <update id="createTableIpBlackList">
+    create table if not exists ip_black_list(
+    ip varchar(43) primary key
+    );
+  </update>
+</mapper>

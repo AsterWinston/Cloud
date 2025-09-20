@@ -1,18 +1,20 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.LoginLogMapper;
+import com.aster.cloud.mapper.LoginTokenMapper;
+import com.aster.cloud.mapper.UserMapper;
 import com.aster.cloud.utils.FileManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import com.aster.cloud.utils.UserManager;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @WebServlet("/deleteUser")
 public class DeleteUserServlet extends HttpServlet {
@@ -57,51 +59,31 @@ public class DeleteUserServlet extends HttpServlet {
      * 执行数据库删除操作
      */
     private boolean deleteUser(HttpServletRequest request, String userName) {
-        if(!UserManager.isUserExists(userName))return false;
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = null;
-        try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            sql = "delete from login_token where name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            preparedStatement.executeUpdate();
-            sql = "delete from login_log where name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            preparedStatement.executeUpdate();
-            sql = "select dir_name from user where name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            ResultSet rs = preparedStatement.executeQuery();
-            if(rs.next()){
-                String userDirectoryName = rs.getString("dir_name");
-                FileManager.deleteFileOrDirectory(((String)request.getSession().getServletContext().getAttribute("file_store_path")).replace("\\", "/") + "/" + userDirectoryName);
-                sql = "delete from user where name = ?";
-                preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, userName);
-                preparedStatement.executeUpdate();
-                conn.commit();
+        if (!UserManager.isUserExists(userName)) return false;
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(false);
+        LoginTokenMapper loginTokenMapper = sqlSession.getMapper(LoginTokenMapper.class);
+        LoginLogMapper loginLogMapper = sqlSession.getMapper(LoginLogMapper.class);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        try{
+            loginTokenMapper.deleteByName(userName);
+            loginLogMapper.deleteByName(userName);
+            User user = userMapper.selectByName(userName);
+            if (user != null) {
+                FileManager.deleteFileOrDirectory(((String) request.getSession().getServletContext().getAttribute("file_store_path")).replace("\\", "/") + "/" + user.getDirName());
+                userMapper.deleteByName(user.getName());
+                sqlSession.commit();
                 return true;
             } else {
-                conn.commit();
+                sqlSession.commit();
                 return false;
             }
-        } catch (SQLException e){
-            System.err.println("DeleteUserServlet中出现sql异常");
+        } catch (Exception e){
+            sqlSession.rollback();
+            System.err.println("DeleteServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return false;
-            } catch (SQLException ex){
-                System.err.println("DeleteUserServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
 }

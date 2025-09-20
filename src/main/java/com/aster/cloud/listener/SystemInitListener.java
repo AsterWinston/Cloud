@@ -1,13 +1,15 @@
 package com.aster.cloud.listener;
-import com.aster.cloud.utils.DBManager;
-import com.aster.cloud.utils.FileManager;
-import com.aster.cloud.utils.UUIDGenerator;
+
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.SystemMapper;
+import com.aster.cloud.mapper.UserMapper;
+import com.aster.cloud.utils.*;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-import java.sql.*;
-import java.time.LocalDateTime;
+import org.apache.ibatis.session.SqlSession;
+import java.util.Date;
 
 @WebListener
 public class SystemInitListener implements ServletContextListener {
@@ -24,108 +26,66 @@ public class SystemInitListener implements ServletContextListener {
             System.err.println("管理员用户名或密码未配置");
             throw new RuntimeException();
         }
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql;
-        ResultSet rs = null;
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-
-            sql = "CREATE TABLE IF NOT EXISTS user (" +
-                    "name VARCHAR(64) PRIMARY KEY," +
-                    "password VARCHAR(128)," +
-                    "limit_volume INT," +
-                    "dir_name CHAR(32)," +
-                    "create_date DATETIME" +
-                    ");";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            SystemMapper systemMapper = sqlSession.getMapper(SystemMapper.class);
+            systemMapper.createTableUser();
+            sqlSession.commit();
+            SqlSessionUtils.closeSqlSession();
             System.out.println("表user初始化成功");
-            sql = "SELECT * FROM user WHERE name = ?";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, admin_name);
-            rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                // 更新密码
+            sqlSession = SqlSessionUtils.getSqlSession(true);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            User user = userMapper.selectByName(admin_name);
+            SqlSessionUtils.closeSqlSession();
+            if(user != null){
+                //更新密码
                 if(admin_password.length() > 128){
                     System.err.println("管理员密码超出128位");
                     throw new RuntimeException();
                 }
-                sql = "UPDATE user SET password = ? WHERE name = ?";
-                preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, admin_password);
-                preparedStatement.setString(2, admin_name);
-                preparedStatement.executeUpdate();
-                System.out.println("管理员密码已更新");
-                sql = "select dir_name from user where name = ?";
-                preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, admin_name);
-                rs = preparedStatement.executeQuery();
-                rs.next();
-                String dir_name = rs.getString("dir_name");
-                FileManager.createDirectory((String)servletContext.getAttribute("file_store_path"), dir_name);
-            } else {
-                // 插入 admin 用户
+                sqlSession = SqlSessionUtils.getSqlSession(false);
+                userMapper = sqlSession.getMapper(UserMapper.class);
+                userMapper.updatePasswordByName(admin_name, admin_password);
+                sqlSession.commit();
+                SqlSessionUtils.closeSqlSession();
+                System.out.println("管理员密码更新成功");
+                //创建目录
+                FileManager.createDirectory((String)servletContext.getAttribute("file_store_path"), user.getDirName());
+                System.out.println("目录" + user.getDirName() + "创建成功");
+            } else{
                 if(admin_name.length()>64 || admin_password.length()>128){
                     System.err.println("管理员名字或者密码超长，名字限长64位，密码限长128位");
                     throw new RuntimeException();
                 }
-                sql = "INSERT INTO user (name, password, limit_volume, dir_name, create_date) VALUES (?, ?, ?, ?, ?)";
-                preparedStatement = conn.prepareStatement(sql);
-                preparedStatement.setString(1, admin_name);
-                preparedStatement.setString(2, admin_password);
-                preparedStatement.setInt(3, 1024); // 默认限制量
                 String dir_name = UUIDGenerator.generateUniqueDirectoryName();
-                preparedStatement.setString(4, dir_name); // 默认目录名
+                sqlSession = SqlSessionUtils.getSqlSession(false);
+                userMapper = sqlSession.getMapper(UserMapper.class);
+                User admin = new User(admin_name, admin_password, 1024L, dir_name, new Date());
+                userMapper.insertOne(admin);
+                sqlSession.commit();
+                SqlSessionUtils.closeSqlSession();
                 FileManager.createDirectory((String)servletContext.getAttribute("file_store_path"), dir_name);
-                preparedStatement.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-                preparedStatement.executeUpdate();
                 System.out.println("管理员账户已创建");
             }
-
-            sql = "CREATE TABLE if not exists login_token (\n" +
-                    "    name VARCHAR(64),  \n" +
-                    "    login_token CHAR(255) PRIMARY KEY,  \n" +
-                    "    create_date DATETIME,  \n" +
-                    "    FOREIGN KEY (name) REFERENCES user(name)  \n" +
-                    ");";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            systemMapper = sqlSession.getMapper(SystemMapper.class);
+            systemMapper.createTableLoginToken();
             System.out.println("表login_tokens初始化成功");
-
-            sql = "create table if not exists ip_black_list(\n" +
-                    "\tip varchar(43) primary key\n" +
-                    ");";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
-            System.out.println("表ip_black_list初始化成功");
-
-            sql = "CREATE TABLE if not exists login_log (\n" +
-                    "   id INT AUTO_INCREMENT PRIMARY KEY,   \n" +
-                    "   name VARCHAR(64),                 \n" +
-                    "   login_time DATETIME,              \n" +
-                    "   login_ip VARCHAR(43),          \n" +
-                    "   FOREIGN KEY (name) REFERENCES user(name)    \n" +
-                    ");";
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.executeUpdate();
+            systemMapper.createTableLoginLog();
             System.out.println("表login_log初始化成功");
-            conn.commit();
-        } catch (SQLException e) {
-            System.err.println("SystemInitListener中出现sql异常");
+            systemMapper.createTableIpBlackList();
+            System.out.println("表ip_black_list初始化成功");
+            sqlSession.commit();
+        } catch (Exception e){
+            sqlSession.rollback();
+            System.err.println("SystemInitListener中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                contextInitialized(sce);
-            } catch (SQLException ex){
-                System.err.println("SystemInitListener中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
+
         System.out.println("SystemInitListener执行成功");
     }
 

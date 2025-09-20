@@ -1,17 +1,19 @@
 package com.aster.cloud.filter;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.beans.IP;
+import com.aster.cloud.mapper.IpBlackListMapper;
 import com.aster.cloud.utils.IPManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @WebFilter(filterName = "NetFilter")
 public class NetFilter extends HttpFilter {
@@ -42,33 +44,22 @@ public class NetFilter extends HttpFilter {
     }
     private boolean ip_accessible(String IP) throws SQLException {
         // 连接数据库并查询 IP 是否在黑名单中
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "select * from ip_black_list";
-        ResultSet rs = null;
-        try {
-            conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement(sql);
-            rs = preparedStatement.executeQuery();
-            while(rs.next()){
-                String blackIP = rs.getString("ip");
-                if(IPManager.isSingleIp(blackIP)){
-                    if (IPManager.equalsIp(blackIP, IP)) {
-                        return false;
-                    }
-                } else {
-                    if (IPManager.ipInCidr(IP, blackIP)){
-                        return false;
-                    }
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        IpBlackListMapper ipBlackListMapper = sqlSession.getMapper(IpBlackListMapper.class);
+        List<IP> ipList = ipBlackListMapper.selectAll();
+        SqlSessionUtils.closeSqlSession();
+        for (IP ip: ipList){
+            String blackIP = ip.getIP();
+            if(IPManager.isSingleIp(blackIP)){
+                if (IPManager.equalsIp(blackIP, IP)) {
+                    return false;
+                }
+            } else {
+                if (IPManager.ipInCidr(IP, blackIP)){
+                    return false;
                 }
             }
-            return true;
-        } catch (SQLException e){
-            System.err.println("NetFilter中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
         }
+        return true;
     }
 }

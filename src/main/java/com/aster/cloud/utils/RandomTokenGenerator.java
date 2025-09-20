@@ -1,4 +1,5 @@
 package com.aster.cloud.utils;
+
 import java.security.SecureRandom;
 
 public class RandomTokenGenerator {

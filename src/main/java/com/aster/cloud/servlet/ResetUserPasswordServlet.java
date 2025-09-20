@@ -1,16 +1,17 @@
 package com.aster.cloud.servlet;
-import com.aster.cloud.utils.DBManager;
+
+import com.aster.cloud.mapper.LoginTokenMapper;
+import com.aster.cloud.mapper.UserMapper;
 import com.aster.cloud.utils.HttpSessionManager;
+import com.aster.cloud.utils.SqlSessionUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.session.SqlSession;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 import static com.aster.cloud.utils.UserManager.isUserExists;
 
@@ -51,58 +52,38 @@ public class ResetUserPasswordServlet extends HttpServlet {
         return true;
     }
     private boolean resetPassword(String userName, String userNewPassword){
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "update user set password = ? where name = ?";
-        try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userNewPassword);
-            preparedStatement.setString(2, userName);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
+
+        SqlSession sqlSession = null;
+        try{
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+            int count = userMapper.updatePasswordByName(userName, userNewPassword);
+            sqlSession.commit();
             return count == 1;
-        } catch (SQLException e){
-            System.err.println("ResetUserPasswordServlet中出现sql异常");
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("ResetUserPasswordServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return resetUserPassword(userName, userNewPassword);
-            } catch (SQLException ex){
-                System.err.println("ResetUserPasswordServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
     private boolean deleteLoginToken(String userName) {
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        String sql = "delete from login_token where name = ?";
+        SqlSession sqlSession = null;
         try {
-            conn = DBManager.getConnection();
-            conn.setAutoCommit(false);
-            preparedStatement = conn.prepareStatement(sql);
-            preparedStatement.setString(1, userName);
-            int count = preparedStatement.executeUpdate();
-            conn.commit();
+            sqlSession = SqlSessionUtils.getSqlSession(false);
+            LoginTokenMapper loginTokenMapper = sqlSession.getMapper(LoginTokenMapper.class);
+            int count = loginTokenMapper.deleteByName(userName);
+            sqlSession.commit();
             return count == 1;
-        } catch (SQLException e){
-            System.err.println("ResetUserPasswordServlet中出现sql异常");
+        } catch (Exception e) {
+            sqlSession.rollback();
+            System.err.println("ResetUserPasswordServlet中出现异常");
             e.printStackTrace();
-            try {
-                conn.rollback();
-                return deleteLoginToken(userName);
-            } catch (SQLException ex){
-                System.err.println("ResetUserPasswordServlet中出现rollback异常");
-                e.printStackTrace();
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         } finally {
-            DBManager.closeConnection(conn);
+            SqlSessionUtils.closeSqlSession();
         }
     }
 }

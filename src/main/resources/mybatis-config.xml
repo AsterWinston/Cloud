@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="conf/db.properties"/>
+    <environments default="mysqlDB">
+        <environment id="mysqlDB">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${db.driverClassName}"/>
+                <property name="url" value="${db.url}"/>
+                <property name="username" value="${db.username}"/>
+                <property name="password" value="${db.password}"/>
+                <property name="poolMaximumActiveConnections" value="${db.poolMaximumActiveConnections}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="mapper/SystemMapper.xml"/>
+        <mapper resource="mapper/UserMapper.xml"/>
+        <mapper resource="mapper/LoginLogMapper.xml"/>
+        <mapper resource="mapper/LoginTokenMapper.xml"/>
+        <mapper resource="mapper/IpBlackListMapper.xml"/>
+    </mappers>
+</configuration>

@@ -1,19 +1,19 @@
 package com.aster.cloud.utils;
+
 import com.aster.cloud.beans.FileOrDirInformation;
+import com.aster.cloud.beans.User;
+import com.aster.cloud.mapper.UserMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import org.apache.ibatis.session.SqlSession;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -215,30 +215,17 @@ public class FileManager {
 
     public static long getSizeNow(HttpServletRequest request) {
         String userName = (String) request.getSession().getAttribute("user_name");
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        String sql = "select dir_name from user where name = ?";
-        ResultSet rs = null;
-        try {
-            conn = DBManager.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, userName);
-            rs = pstmt.executeQuery();
-            if (rs.next()) {
-                String dirName = rs.getString("dir_name");
-                String basePath = (String) request.getServletContext().getAttribute("file_store_path");
-                String fullDir = basePath.replace("\\", "/") + "/" + dirName;
-
-                return getDirectorySize(new File(fullDir)) / (1024L * 1024);
-            } else {
-                throw new RuntimeException("用户目录不存在");
-            }
-        } catch (SQLException e) {
-            System.err.println("FileManager中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User user = userMapper.selectByName(userName);
+        SqlSessionUtils.closeSqlSession();
+        if(user != null){
+            String dirName = user.getDirName();
+            String basePath = (String) request.getServletContext().getAttribute("file_store_path");
+            String fullDir = basePath.replace("\\", "/") + "/" + dirName;
+            return getDirectorySize(new File(fullDir)) / (1024L * 1024);
+        } else {
+            return 0;
         }
     }
 
@@ -246,27 +233,14 @@ public class FileManager {
      * 获取空间限制(MB)
      */
     public static long getLimitSize(HttpServletRequest request) {
-        Connection conn = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet rs = null;
-        String userName = (String) request.getSession().getAttribute("user_name");
-
-        try {
-            conn = DBManager.getConnection();
-            preparedStatement = conn.prepareStatement("select limit_volume from user where name = ?");
-            preparedStatement.setString(1, userName);
-            rs = preparedStatement.executeQuery();
-            if (rs.next()) {
-                return rs.getLong("limit_volume");
-            } else {
-                throw new RuntimeException("未找到用户存储限制");
-            }
-        } catch (SQLException e) {
-            System.err.println("FileManager中出现sql异常");
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            DBManager.closeConnection(conn);
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession(true);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User user = userMapper.selectByName((String) request.getSession().getAttribute("user_name"));
+        SqlSessionUtils.closeSqlSession();
+        if(user != null){
+            return user.getLimitVolume();
+        } else {
+            return 0;
         }
     }
 

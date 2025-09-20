@@ -6,7 +6,7 @@
 
     <groupId>com.aster.cloud</groupId>
     <artifactId>MyCloud</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.6</version>
     <!-- 打包类型为 war，适合 Web 应用 -->
     <packaging>war</packaging>
 
@@ -71,6 +71,21 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20231013</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.19</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
 
 
